@@ -50,7 +50,14 @@
 </script>
 
 <style>
-  .el-aside {
-    color: #333;
+  .logo {
+    background-color: #20222A;
+    color: rgba(255, 255, 255, .8);
+    text-align: center;
+    height: 60px;
+    padding-top: 16px;
+    font-size: 16px;
+    box-sizing: border-box;
+    border-bottom: 1px solid gray;
   }
 </style>

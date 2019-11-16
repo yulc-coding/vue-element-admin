@@ -13,16 +13,9 @@
 </template>
 
 <script>
-export default {
-  name: "HeadBar"
-};
+  export default {
+    name: "HeadBar"
+  };
 </script>
 
-<style>
-.el-header {
-    background-color: #B3C0D1;
-    color: #333;
-    line-height: 60px;
-  }
-
-</style>
+<style></style>
