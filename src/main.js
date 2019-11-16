@@ -1,15 +1,41 @@
 import Vue from "vue";
-import ElementUI from "element-ui";
-import "element-ui/lib/theme-chalk/index.css";
+import {
+  Container,
+  Header,
+  Aside,
+  Main,
+  Menu,
+  Submenu,
+  MenuItem,
+  MenuItemGroup,
+  Dropdown,
+  DropdownMenu,
+  DropdownItem,
+  Table,
+  TableColumn,
+} from "element-ui";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
 
+Vue.use(Container);
+Vue.use(Header);
+Vue.use(Aside);
+Vue.use(Main);
+Vue.use(Menu);
+Vue.use(Submenu);
+Vue.use(MenuItem);
+Vue.use(MenuItemGroup);
+Vue.use(Dropdown);
+Vue.use(DropdownMenu);
+Vue.use(DropdownItem);
+Vue.use(Table);
+Vue.use(TableColumn);
+
 Vue.config.productionTip = false;
-Vue.use(ElementUI);
 
 new Vue({
-    router,
-    store,
-    render: h => h(App)
+  router,
+  store,
+  render: h => h(App)
 }).$mount("#app");
