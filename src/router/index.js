@@ -1,23 +1,49 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Home from "../layout/Home/Home.vue";
+import Index from "../layout/Index/Index";
+import Home from "../views/Home/Home";
+import Department from "../views/sys/Department/Department";
+import User from "../views/sys/User/User";
+import Role from "../views/sys/Role/Role";
+import Permission from "../views/sys/Permission/Permission";
+import NotFound from "../views/NotFound";
 
 Vue.use(VueRouter);
 
 const routes = [
   {
     path: "/",
-    name: "home",
-    component: Home
+    component: Index,
+    children: [
+      {
+        path: "/home",
+        component: Home
+      },
+      {
+        path: "/sys/department",
+        component: Department
+      },
+      {
+        path: "/sys/user",
+        component: User
+      },
+      {
+        path: "/sys/role",
+        component: Role
+      },
+      {
+        path: "/sys/permission",
+        component: Permission
+      },
+      {
+        path: "/404",
+        component: NotFound
+      }
+    ]
   },
   {
-    path: "/about",
-    name: "about",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/About.vue")
+    path: "*",
+    redirect: { path: "/404" }
   }
 ];
 

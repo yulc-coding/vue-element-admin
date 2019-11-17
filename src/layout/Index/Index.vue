@@ -8,7 +8,7 @@
         <HeadBar />
       </el-header>
       <el-main>
-        <MainContent />
+        <router-view v-if="isRouterAlive" />
       </el-main>
     </el-container>
   </el-container>
@@ -17,11 +17,20 @@
 <script>
   import SideBar from "../../layout/SideBar/SideBar";
   import HeadBar from "../../layout/HeadBar/HeadBar";
-  import MainContent from "../../layout/MainContent/MainContent";
 
   export default {
-    name: "Home",
-    components: { SideBar, HeadBar, MainContent },
+    name: "Index",
+    components: { SideBar, HeadBar },
+    provide() {
+      return {
+        reload: this.reload
+      }
+    },
+    data() {
+      return {
+        isRouterAlive: true
+      }
+    },
     computed: {
       isCollapse() {
         return this.$store.state.isCollapse
@@ -29,7 +38,15 @@
       asideWidth() {
         return this.$store.state.isCollapse ? 'auto' : '200px'
       }
-    }
+    },
+    methods: {
+      reload() {
+        this.isRouterAlive = false;
+        this.$nextTick(() => {
+          this.isRouterAlive = true;
+        })
+      }
+    },
   };
 </script>
 

@@ -8,7 +8,7 @@
 
 <script>
   export default {
-    name: "MainContent",
+    name: "Home",
     data() {
       const item = {
         date: '2016-05-02',
