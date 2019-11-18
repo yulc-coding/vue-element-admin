@@ -1,6 +1,13 @@
 <template>
   <!--导航菜单 -->
-  <el-menu router class="el-menu-vertical-demo" :collapse="isCollapse">
+  <el-menu
+    router
+    class="el-menu-vertical-demo"
+    :collapse="isCollapse"
+    background-color="#20222A"
+    text-color="#fff"
+    active-text-color="#ffd04b"
+  >
     <el-menu-item index="/home">
       <i class="el-icon-setting"></i>
       <span slot="title">首页</span>
