@@ -4,8 +4,15 @@ import Vuex from "vuex";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-  state: {},
-  mutations: {},
+  state: {
+    // 左侧菜单是否折叠
+    isCollapse: false
+  },
+  mutations: {
+    switchCollapse(state) {
+      state.isCollapse = !state.isCollapse;
+    }
+  },
   actions: {},
   modules: {}
 });

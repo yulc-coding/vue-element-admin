@@ -4,7 +4,10 @@
 
 <script>
   export default {
-    name: "Role"
+    name: "Role",
+    data() {
+      return {}
+    },
   }
 </script>
 

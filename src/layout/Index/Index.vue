@@ -1,14 +1,20 @@
 <template>
   <el-container>
-    <el-aside width="200px">
-      <SideBar />
+    <el-aside :width="asideWidth">
+      <!--logo-->
+      <div class="logo">
+        <router-link to="/home">
+          <img v-show="!isCollapse" :src="require('@/assets/logo.png')" alt="后台管理">
+        </router-link>
+      </div>
+      <SideBar :isCollapse="isCollapse" />
     </el-aside>
     <el-container>
       <el-header>
-        <HeadBar />
+        <HeadBar :isCollapse="isCollapse" />
       </el-header>
       <el-main>
-        <router-view v-if="isRouterAlive" />
+        <router-view />
       </el-main>
     </el-container>
   </el-container>
@@ -21,16 +27,11 @@
   export default {
     name: "Index",
     components: { SideBar, HeadBar },
-    provide() {
-      return {
-        reload: this.reload
-      }
-    },
+
     data() {
-      return {
-        isRouterAlive: true
-      }
+      return {}
     },
+
     computed: {
       isCollapse() {
         return this.$store.state.isCollapse
@@ -38,15 +39,7 @@
       asideWidth() {
         return this.$store.state.isCollapse ? 'auto' : '200px'
       }
-    },
-    methods: {
-      reload() {
-        this.isRouterAlive = false;
-        this.$nextTick(() => {
-          this.isRouterAlive = true;
-        })
-      }
-    },
+    }
   };
 </script>
 
@@ -57,12 +50,22 @@
     min-height: 100%;
   }
 
+  .logo {
+    background-color: #20222A;
+    color: rgba(255, 255, 255, .8);
+    text-align: center;
+    height: 60px;
+    padding-top: 16px;
+    font-size: 16px;
+    box-sizing: border-box;
+    border-bottom: 1px solid gray;
+  }
+
   .el-header {
     border-bottom: 1px solid #f6f6f6;
     box-sizing: border-box;
     background-color: #fff;
     line-height: 60px;
-    text-align: right;
     font-size: 12px
   }
 </style>

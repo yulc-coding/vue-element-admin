@@ -1,10 +1,18 @@
 <template>
-  <p>this is user page</p>
+  <p>this is user page : {{ now }}</p>
 </template>
 
 <script>
   export default {
-    name: "User"
+    name: "User",
+    data() {
+      return {}
+    },
+    computed: {
+      now() {
+        return Date.now();
+      }
+    }
   }
 </script>
 

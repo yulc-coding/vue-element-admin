@@ -13,6 +13,8 @@ import {
   DropdownItem,
   Table,
   TableColumn,
+  Col,
+  Row
 } from "element-ui";
 import App from "./App.vue";
 import router from "./router";
@@ -31,6 +33,8 @@ Vue.use(DropdownMenu);
 Vue.use(DropdownItem);
 Vue.use(Table);
 Vue.use(TableColumn);
+Vue.use(Col);
+Vue.use(Row);
 
 Vue.config.productionTip = false;
 

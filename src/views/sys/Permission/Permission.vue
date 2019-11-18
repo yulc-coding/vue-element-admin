@@ -4,7 +4,10 @@
 
 <script>
   export default {
-    name: "Permission"
+    name: "Permission",
+    data() {
+      return {}
+    }
   }
 </script>
 

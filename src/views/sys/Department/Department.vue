@@ -4,7 +4,10 @@
 
 <script>
   export default {
-    name: "Department"
+    name: "Department",
+    data() {
+      return {}
+    }
   }
 </script>
 
