@@ -14,7 +14,8 @@ import {
   Table,
   TableColumn,
   Col,
-  Row
+  Row,
+  Button
 } from "element-ui";
 import App from "./App.vue";
 import router from "./router";
@@ -35,6 +36,7 @@ Vue.use(Table);
 Vue.use(TableColumn);
 Vue.use(Col);
 Vue.use(Row);
+Vue.use(Button);
 
 Vue.config.productionTip = false;
 

@@ -2,7 +2,6 @@
   <!--导航菜单 -->
   <el-menu
     router
-    class="el-menu-vertical-demo"
     :collapse="isCollapse"
     background-color="#20222A"
     text-color="#fff"
@@ -44,3 +43,9 @@
     }
   }
 </script>
+
+<style scoped>
+  .el-menu {
+    border: none;
+  }
+</style>

@@ -1,5 +1,5 @@
 <template>
-  <el-container>
+  <el-container class="index-box">
     <el-aside :width="asideWidth">
       <!--logo-->
       <div class="logo">
@@ -44,6 +44,22 @@
 </script>
 
 <style scoped>
+
+  .index-box {
+    font-family: 'Avenir', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    height: 100%;
+  }
+
+  .index-box .el-container {
+    height: 100%;
+  }
+
+  .index-box .el-container .el-main {
+    height: 100%;
+  }
+
   .el-aside {
     background-color: #20222A;
     height: 100vh;
