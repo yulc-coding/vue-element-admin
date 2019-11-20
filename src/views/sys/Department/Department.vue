@@ -13,12 +13,37 @@
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
         <span>
-          <el-button type="text" size="mini" @click="() => append(data)">Append</el-button>
+          <el-button type="text" size="mini" @click="() => openDialog(data)">Append</el-button>
           <el-button type="text" size="mini" @click="() => edit(data)">Edit</el-button>
           <el-button type="text" size="mini" @click="() => remove(node, data)">Delete</el-button>
         </span>
       </span>
     </el-tree>
+    <el-dialog
+      :title="dialogTitle"
+      :visible.sync="dialogVisible"
+      width="30%"
+      center
+    >
+      <el-form :model="depForm" :rules="rules">
+        <el-form-item label="上级部门" :label-width="formLabelWidth">
+          <el-input v-model="depForm.pName" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="部门编码" :label-width="formLabelWidth">
+          <el-input v-model="depForm.code" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="部门名称" :label-width="formLabelWidth" prop="name">
+          <el-input v-model="depForm.name" maxlength="10" show-word-limit />
+        </el-form-item>
+        <el-form-item label="备注" :label-width="formLabelWidth">
+          <el-input type="textarea" v-model="depForm.remark" maxlength="50" show-word-limit />
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="()=> append()">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -48,15 +73,39 @@
       },
 
       /**
-       * 新增节点
-       * @param data
+       *
        */
-      append(data) {
+      openDialog(data) {
+        this.dialogTitle = "新增部门";
+        this.dialogVisible = true;
+        this.depForm.pid = data.id;
+        this.depForm.pName = data.label;
+        this.cueNodeData = data;
+      },
+
+      closeDialog() {
+        this.dialogTitle = "";
+        this.dialogVisible = false;
+        this.depForm.id = "";
+        this.depForm.pid = "";
+        this.depForm.pName = "";
+        this.depForm.code = "";
+        this.depForm.name = "";
+        this.depForm.remark = "";
+        this.cueNodeData = {};
+      },
+
+      /**
+       * 新增节点
+       */
+      append() {
         const newChild = { id: id++, label: 'testtest', children: [] };
+        const data = this.cueNodeData;
         if (!data.children) {
           this.$set(data, 'children', []);
         }
         data.children.push(newChild);
+        this.closeDialog();
       },
 
       /**
@@ -72,8 +121,8 @@
 
       /**
        * 删除节点
-       * @param node 要删除的节点
-       * @param data
+       * @param node 当前节点
+       * @param data 要删除的节点数据
        */
       remove(node, data) {
         const parent = node.parent;
@@ -86,7 +135,24 @@
 
     data() {
       return {
-        filterText: '',
+        filterText: "",
+        dialogTitle: "",
+        dialogVisible: false,
+        formLabelWidth: '80px',
+        cueNodeData: {},
+        depForm: {
+          id: "",
+          code: "",
+          name: "",
+          pid: "",
+          pName: "",
+          remark: ""
+        },
+        rules: {
+          name: [
+            { required: true, message: '请输入部门名称', trigger: 'blur' }
+          ]
+        },
         data: [{
           id: 1,
           label: '一级 1',
