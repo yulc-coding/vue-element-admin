@@ -48,6 +48,8 @@
 </template>
 
 <script>
+  // import { add, del, update, getInfo, tree } from '@/api/department'
+
   let id = 1000;
 
   export default {
