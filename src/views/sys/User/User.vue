@@ -79,6 +79,9 @@
 </template>
 
 <script>
+
+  import { getInfo, page } from '@/api/user';
+
   export default {
     data() {
       return {
@@ -105,25 +108,57 @@
       };
     },
     mounted() {
-      this.getUsers();
+      this.userPage();
     },
     methods: {
-      getUsers() {
-        this.loading = true;
-        this.$http("/api/users")
+
+      /**
+       * 分页
+       */
+      userPage() {
+        page({
+          "name": "系统",
+          "username": "root",
+          "page": 1,
+          "size": 10
+        })
           .then(res => {
-            this.users = res.data;
+            console.log(res);
           })
           .catch(err => {
             console.error(err);
           });
       },
+
+      /**
+       * 获取明细
+       */
+      userDetail(userId) {
+        getInfo(userId)
+          .then(res => {
+            console.log(res);
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      },
+
+      /**
+       * 编辑
+       * @param index
+       * @param row
+       */
       handleEdit(index, row) {
         this.dialogTitle = "编辑";
         this.user = Object.assign({}, row);
         this.userFormVisible = true;
         this.rowIndex = index;
       },
+
+      /**
+       * 提交表单
+       * @param formName
+       */
       submitUser(formName) {
         // 表单验证
         this.$refs[formName].validate(valid => {
@@ -145,6 +180,12 @@
           }
         });
       },
+
+      /**
+       * 删除单条
+       * @param index
+       * @param row
+       */
       handleDelete(index, row) {
         this.$confirm(`确定删除用户 【${row.name}】 吗?`, "提示", {
           confirmButtonText: "确定",
@@ -162,9 +203,18 @@
             console.log("取消删除");
           });
       },
+
+      /**
+       * 重置表单
+       * @param formName
+       */
       resetForm(formName) {
         this.$refs[formName].clearValidate();
       },
+
+      /**
+       * 批量删除
+       */
       mulDelete() {
         let len = this.multipleSelection.length;
         if (len === 0) {
@@ -192,6 +242,10 @@
       selectChange(val) {
         this.multipleSelection = val;
       },
+
+      /**
+       * 新增
+       */
       handleAdd() {
         this.dialogTitle = "新增";
         this.user = Object.assign({}, this.userBackup);

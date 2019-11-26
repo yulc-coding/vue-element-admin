@@ -32,6 +32,7 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   response => {
     const res = response.data;
+    console.log("res", res);
 
     // 请求异常
     if (res.code !== 200) {
