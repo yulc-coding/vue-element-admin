@@ -9,17 +9,13 @@
       </el-col>
     </el-row>
     <el-table :data="users" @selection-change="selectChange" style="width: 100%">
-      <el-table-column type="selection" width="55"></el-table-column>
-      <el-table-column sortable prop="date" label="日期" width="180">
-      </el-table-column>
-      <el-table-column prop="name" label="姓名" width="180"></el-table-column>
-      <el-table-column prop="phone" label="手机" width="180"></el-table-column>
-      <el-table-column prop="address" label="地址"></el-table-column>
-      <el-table-column label="状态">
-        <template slot-scope="scope">
-          {{ scope.row.status ? "启用" : "禁用" }}
-        </template>
-      </el-table-column>
+      <el-table-column type="selection" width="55" prop="id" />
+      <el-table-column sortable prop="username" label="账号" width="180" />
+      <el-table-column prop="name" label="姓名" width="180" />
+      <el-table-column prop="depName" label="部门" width="180" />
+      <el-table-column prop="phone" label="电话" width="180" />
+      <el-table-column prop="state" label="状态" width="180" />
+      <el-table-column prop="remark" label="备注" />
       <el-table-column label="操作" fixed="right" width="150">
         <template slot-scope="scope">
           <el-button size="mini" type="primary" plain @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
@@ -43,13 +39,13 @@
     >
       <el-form :model="user" :rules="rules" ref="userForm">
         <el-form-item label="姓名" prop="name" label-width="50px">
-          <el-input v-model="user.name" autocomplete="off"></el-input>
+          <el-input v-model="user.name" autocomplete="off" />
         </el-form-item>
         <el-form-item label="手机" label-width="50px">
-          <el-input v-model="user.phone" autocomplete="off"></el-input>
+          <el-input v-model="user.phone" autocomplete="off" />
         </el-form-item>
         <el-form-item label="地址" label-width="50px">
-          <el-input v-model="user.address" autocomplete="off"></el-input>
+          <el-input v-model="user.address" autocomplete="off" />
         </el-form-item>
         <el-form-item label="日期" label-width="50px">
           <el-date-picker
@@ -67,7 +63,7 @@
             inactive-color="#ff4949"
             :active-value="1"
             :inactive-value="0"
-          ></el-switch>
+          />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -79,7 +75,6 @@
 </template>
 
 <script>
-
   import { getInfo, page } from '@/api/user';
 
   export default {
@@ -117,13 +112,12 @@
        */
       userPage() {
         page({
-          "name": "系统",
-          "username": "root",
           "page": 1,
           "size": 10
         })
           .then(res => {
             console.log(res);
+            this.users = res.data.records;
           })
           .catch(err => {
             console.error(err);
