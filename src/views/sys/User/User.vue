@@ -102,9 +102,11 @@
         }
       };
     },
+
     mounted() {
       this.userPage();
     },
+
     methods: {
 
       /**
