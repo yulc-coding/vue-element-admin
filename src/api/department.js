@@ -52,6 +52,6 @@ export function getInfo(id) {
 export function tree() {
   return request({
     url: "/sys/department/tree",
-    method: "post"
+    method: "get"
   });
 }

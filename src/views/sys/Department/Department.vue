@@ -13,8 +13,8 @@
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
         <span>
-          <el-button type="text" size="mini" @click="() => openDialog(data)">Append</el-button>
-          <el-button type="text" size="mini" @click="() => edit(data)">Edit</el-button>
+          <el-button type="text" size="mini" @click="() => openDialogForAdd(data)">Append</el-button>
+          <el-button type="text" size="mini" @click="() => openDialogForEdit(node, data)">Edit</el-button>
           <el-button type="text" size="mini" @click="() => remove(node, data)">Delete</el-button>
         </span>
       </span>
@@ -25,7 +25,7 @@
       width="30%"
       center
     >
-      <el-form :model="depForm" :rules="rules">
+      <el-form ref="depForm" :model="depForm" :rules="rules">
         <el-form-item label="上级部门" :label-width="formLabelWidth">
           <el-input v-model="depForm.pName" disabled></el-input>
         </el-form-item>
@@ -41,19 +41,50 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="()=> append()">确 定</el-button>
+        <el-button type="primary" @click="submitDialog('depForm')">提 交</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-  import { tree } from '@/api/department'
-
-  let id = 1000;
+  import { add, del, update, tree } from "@/api/department";
 
   export default {
     name: "Department",
+
+    data() {
+      return {
+        filterText: "",
+        dialogTitle: "",
+        dialogVisible: false,
+        formLabelWidth: "80px",
+        cueNodeData: {},
+        depForm: {
+          id: "",
+          code: "",
+          name: "",
+          pid: "",
+          pName: "",
+          remark: ""
+        },
+        // 表单验证
+        rules: {
+          name: [{ required: true, message: "请输入部门名称", trigger: "blur" }]
+        },
+        depTree: [],
+        emptyDepTree: [
+          {
+            id: 0,
+            name: "根目录"
+          }
+        ],
+        defaultProps: {
+          children: "children",
+          label: "name"
+        }
+      };
+    },
 
     watch: {
       filterText(val) {
@@ -84,22 +115,46 @@
       getTree() {
         tree()
           .then(res => {
-            console.log(res.data);
-            this.depTree = res.data;
+            const treeData = res.data.children;
+            if (treeData) {
+              this.depTree = treeData;
+            } else {
+              this.depTree = this.emptyDepTree;
+            }
           })
           .catch(err => {
             console.error(err);
-          })
+          });
       },
 
-      /**
-       *
-       */
-      openDialog(data) {
+      setParentData(curNode) {
+        const parentData = curNode.parent.data;
+        if (parentData.id) {
+          this.depForm.pid = parentData.id;
+          this.depForm.pName = parentData.name;
+        } else {
+          this.depForm.pid = 0;
+          this.depForm.pName = "根目录";
+        }
+      },
+
+      openDialogForAdd(node, data) {
+        this.setParentData(node);
         this.dialogTitle = "新增部门";
         this.dialogVisible = true;
         this.depForm.pid = data.id;
         this.depForm.pName = data.label;
+        this.cueNodeData = data;
+      },
+
+      openDialogForEdit(node, data) {
+        this.setParentData(node);
+        this.dialogTitle = "修改部门";
+        this.dialogVisible = true;
+        this.depForm.id = data.id;
+        this.depForm.code = data.code;
+        this.depForm.name = data.name;
+        this.depForm.remark = data.remark;
         this.cueNodeData = data;
       },
 
@@ -115,28 +170,65 @@
         this.cueNodeData = {};
       },
 
+      submitDialog(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            if (this.dialogTitle === "新增部门") {
+              this.append();
+            } else {
+              this.edit();
+            }
+          }
+        });
+      },
+
       /**
        * 新增节点
        */
       append() {
-        const newChild = { id: id++, label: 'testtest', children: [] };
-        const data = this.cueNodeData;
-        if (!data.children) {
-          this.$set(data, 'children', []);
-        }
-        data.children.push(newChild);
-        this.closeDialog();
+        let childNode = {
+          name: this.depForm.name,
+          pid: this.depForm.pid,
+          remark: this.depForm.remark
+        };
+
+        add(childNode)
+          .then(res => {
+            childNode.id = res.data;
+            const nodeData = this.cueNodeData;
+            if (!nodeData.children) {
+              this.$set(nodeData, "children", []);
+            }
+            nodeData.children.push(childNode);
+            this.closeDialog();
+          })
+          .catch(err => {
+            console.error(err);
+            this.closeDialog();
+          });
       },
 
       /**
        * 修改节点
-       * @param data 要修改的节点数据
        */
-      edit(data) {
-        console.log(data.id);
-        console.log(data.label);
-        console.log(data.children);
-        data.label = "new";
+      edit() {
+        let data = {
+          id: this.depForm.id,
+          name: this.depForm.name,
+          remark: this.depForm.remark
+        };
+        update(data)
+          .then(() => {
+            const nodeData = this.cueNodeData;
+            nodeData.name = data.name;
+            nodeData.remark = data.remark;
+            this.closeDialog();
+          })
+          .catch(err => {
+            console.error(err);
+            this.closeDialog();
+          });
+
       },
 
       /**
@@ -145,76 +237,20 @@
        * @param data 要删除的节点数据
        */
       remove(node, data) {
-        const parent = node.parent;
-        const children = parent.data.children || parent.data;
-        const index = children.findIndex(d => d.id === data.id);
-        children.splice(index, 1);
+        del(data.id)
+          .then(() => {
+            const parent = node.parent;
+            const children = parent.data.children || parent.data;
+            const index = children.findIndex(d => d.id === data.id);
+            children.splice(index, 1);
+          })
+          .catch(err => {
+            console.error(err);
+            this.closeDialog();
+          });
       }
-
-    },
-
-    data() {
-      return {
-        filterText: "",
-        dialogTitle: "",
-        dialogVisible: false,
-        formLabelWidth: '80px',
-        cueNodeData: {},
-        depForm: {
-          id: "",
-          code: "",
-          name: "",
-          pid: "",
-          pName: "",
-          remark: ""
-        },
-        rules: {
-          name: [
-            { required: true, message: '请输入部门名称', trigger: 'blur' }
-          ]
-        },
-        depTree: [{
-          id: 1,
-          name: '一级 1',
-          children: [{
-            id: 4,
-            name: '二级 1-1',
-            children: [{
-              id: 9,
-              name: '三级 1-1-1'
-            }, {
-              id: 10,
-              name: '三级 1-1-2'
-            }]
-          }]
-        }, {
-          id: 2,
-          name: '一级 2',
-          children: [{
-            id: 5,
-            name: '二级 2-1'
-          }, {
-            id: 6,
-            name: '二级 2-2'
-          }]
-        }, {
-          id: 3,
-          name: '一级 3',
-          children: [{
-            id: 7,
-            name: '二级 3-1'
-          }, {
-            id: 8,
-            name: '二级 3-2'
-          }]
-        }],
-        defaultProps: {
-          children: 'children',
-          label: 'name'
-        }
-      };
     }
-  }
+  };
 </script>
 
 <style scoped>
