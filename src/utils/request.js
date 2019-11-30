@@ -36,12 +36,6 @@ service.interceptors.response.use(
 
     // 请求异常
     if (res.code !== 200) {
-      Message({
-        message: res.message || "Error",
-        type: "error",
-        duration: 5 * 1000
-      });
-
       // token过期，引导到登录界面
       if (res.code === 403) {
         // to re-login
@@ -58,8 +52,14 @@ service.interceptors.response.use(
             location.reload();
           });
         });
+      } else {
+        Message({
+          message: res.msg || "Error",
+          type: "error",
+          duration: 5 * 1000
+        });
       }
-      return Promise.reject(new Error(res.message || "Error"));
+      return Promise.reject(new Error(res.msg || "Error"));
     } else {
       return res;
     }
@@ -67,7 +67,7 @@ service.interceptors.response.use(
   error => {
     console.log("err" + error); // for debug
     Message({
-      message: error.message,
+      message: error.msg,
       type: "error",
       duration: 5 * 1000
     });

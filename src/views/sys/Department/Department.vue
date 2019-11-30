@@ -13,7 +13,7 @@
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
         <span>
-          <el-button type="text" size="mini" @click="() => openDialogForAdd(data)">Append</el-button>
+          <el-button type="text" size="mini" @click="() => openDialogForAdd(node, data)">Append</el-button>
           <el-button type="text" size="mini" @click="() => openDialogForEdit(node, data)">Edit</el-button>
           <el-button type="text" size="mini" @click="() => remove(node, data)">Delete</el-button>
         </span>
@@ -27,16 +27,16 @@
     >
       <el-form ref="depForm" :model="depForm" :rules="rules">
         <el-form-item label="上级部门" :label-width="formLabelWidth">
-          <el-input v-model="depForm.pName" disabled></el-input>
+          <el-input v-model="depForm.pName" disabled />
         </el-form-item>
         <el-form-item label="部门编码" :label-width="formLabelWidth">
-          <el-input v-model="depForm.code" disabled></el-input>
+          <el-input v-model="depForm.code" disabled />
         </el-form-item>
         <el-form-item label="部门名称" :label-width="formLabelWidth" prop="name">
           <el-input v-model="depForm.name" maxlength="10" show-word-limit />
         </el-form-item>
         <el-form-item label="备注" :label-width="formLabelWidth">
-          <el-input type="textarea" v-model="depForm.remark" maxlength="50" show-word-limit />
+          <el-input v-model="depForm.remark" maxlength="50" show-word-limit />
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -55,11 +55,13 @@
 
     data() {
       return {
+        formLabelWidth: "80px",
         filterText: "",
         dialogTitle: "",
         dialogVisible: false,
-        formLabelWidth: "80px",
+        // 操作节点时当前节点的信息
         cueNodeData: {},
+        // 表单实体
         depForm: {
           id: "",
           code: "",
@@ -127,6 +129,9 @@
           });
       },
 
+      /**
+       * 设置上级节点的信息
+       */
       setParentData(curNode) {
         const parentData = curNode.parent.data;
         if (parentData.id) {
@@ -138,15 +143,19 @@
         }
       },
 
+      /**
+       * 打开新增面板
+       */
       openDialogForAdd(node, data) {
         this.setParentData(node);
         this.dialogTitle = "新增部门";
         this.dialogVisible = true;
-        this.depForm.pid = data.id;
-        this.depForm.pName = data.label;
         this.cueNodeData = data;
       },
 
+      /**
+       * 打开修改面板
+       */
       openDialogForEdit(node, data) {
         this.setParentData(node);
         this.dialogTitle = "修改部门";
@@ -158,6 +167,9 @@
         this.cueNodeData = data;
       },
 
+      /**
+       * 关闭弹窗，并清空表单数据
+       */
       closeDialog() {
         this.dialogTitle = "";
         this.dialogVisible = false;
@@ -170,6 +182,9 @@
         this.cueNodeData = {};
       },
 
+      /**
+       * 提交表单，判断新增还是修改
+       */
       submitDialog(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
@@ -191,7 +206,6 @@
           pid: this.depForm.pid,
           remark: this.depForm.remark
         };
-
         add(childNode)
           .then(res => {
             childNode.id = res.data;
@@ -201,9 +215,12 @@
             }
             nodeData.children.push(childNode);
             this.closeDialog();
+            this.$message({
+              message: '新增成功',
+              type: 'success'
+            });
           })
-          .catch(err => {
-            console.error(err);
+          .catch(() => {
             this.closeDialog();
           });
       },
@@ -223,12 +240,14 @@
             nodeData.name = data.name;
             nodeData.remark = data.remark;
             this.closeDialog();
+            this.$message({
+              message: '修改成功',
+              type: 'success'
+            });
           })
           .catch(err => {
             console.error(err);
-            this.closeDialog();
           });
-
       },
 
       /**
@@ -237,18 +256,31 @@
        * @param data 要删除的节点数据
        */
       remove(node, data) {
-        del(data.id)
-          .then(() => {
-            const parent = node.parent;
-            const children = parent.data.children || parent.data;
-            const index = children.findIndex(d => d.id === data.id);
-            children.splice(index, 1);
-          })
-          .catch(err => {
-            console.error(err);
-            this.closeDialog();
-          });
+        this.$confirm('确定要删除' + data.name + '?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          del(data.id)
+            .then(() => {
+              const parent = node.parent;
+              const children = parent.data.children || parent.data;
+              const index = children.findIndex(d => d.id === data.id);
+              children.splice(index, 1);
+              this.$message({
+                message: "删除成功",
+                type: "success"
+              });
+            })
+            .catch(err => {
+              console.error(err);
+              this.closeDialog();
+            });
+        }).catch(() => {
+        });
+
       }
+
     }
   };
 </script>
