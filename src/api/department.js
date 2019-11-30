@@ -18,7 +18,7 @@ export function add(data) {
  */
 export function del(id) {
   return request({
-    url: "/sys/department/del/" + id,
+    url: "/sys/department/delete/" + id,
     method: "get"
   });
 }

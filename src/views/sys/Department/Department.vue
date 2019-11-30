@@ -1,6 +1,7 @@
 <template>
   <div class="custom-tree-container">
     <el-input placeholder="输入关键字进行过滤" v-model="filterText" />
+    <el-button type="text" icon="el-icon-folder-add" @click="openDialogForAddRoot()">添加根目录</el-button>
     <el-tree
       class="filter-tree"
       :data="depTree"
@@ -13,7 +14,7 @@
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
         <span>
-          <el-button type="text" size="mini" @click="() => openDialogForAdd(node, data)">Append</el-button>
+          <el-button type="text" size="mini" @click="() => openDialogForAddChildren(data)">Append</el-button>
           <el-button type="text" size="mini" @click="() => openDialogForEdit(node, data)">Edit</el-button>
           <el-button type="text" size="mini" @click="() => remove(node, data)">Delete</el-button>
         </span>
@@ -59,6 +60,8 @@
         filterText: "",
         dialogTitle: "",
         dialogVisible: false,
+        // 表单提交类别 ：edit,addRoot,addChildren
+        submitType: "",
         // 操作节点时当前节点的信息
         cueNodeData: {},
         // 表单实体
@@ -75,12 +78,6 @@
           name: [{ required: true, message: "请输入部门名称", trigger: "blur" }]
         },
         depTree: [],
-        emptyDepTree: [
-          {
-            id: 0,
-            name: "根目录"
-          }
-        ],
         defaultProps: {
           children: "children",
           label: "name"
@@ -117,16 +114,34 @@
       getTree() {
         tree()
           .then(res => {
-            const treeData = res.data.children;
-            if (treeData) {
-              this.depTree = treeData;
-            } else {
-              this.depTree = this.emptyDepTree;
-            }
+            this.depTree = res.data.children;
           })
           .catch(err => {
             console.error(err);
           });
+      },
+
+      /**
+       * 新增根目录
+       */
+      openDialogForAddRoot() {
+        this.submitType = "addRoot";
+        this.dialogTitle = "新增部门";
+        this.dialogVisible = true;
+        this.depForm.pid = 0;
+        this.depForm.pName = "根目录";
+      },
+
+      /**
+       * 打开新增面板
+       */
+      openDialogForAddChildren(data) {
+        this.submitType = "addChildren";
+        this.dialogTitle = "新增部门";
+        this.dialogVisible = true;
+        this.cueNodeData = data;
+        this.depForm.pid = data.id;
+        this.depForm.pName = data.name;
       },
 
       /**
@@ -144,20 +159,11 @@
       },
 
       /**
-       * 打开新增面板
-       */
-      openDialogForAdd(node, data) {
-        this.setParentData(node);
-        this.dialogTitle = "新增部门";
-        this.dialogVisible = true;
-        this.cueNodeData = data;
-      },
-
-      /**
        * 打开修改面板
        */
       openDialogForEdit(node, data) {
         this.setParentData(node);
+        this.submitType = "edit";
         this.dialogTitle = "修改部门";
         this.dialogVisible = true;
         this.depForm.id = data.id;
@@ -173,6 +179,7 @@
       closeDialog() {
         this.dialogTitle = "";
         this.dialogVisible = false;
+        this.submitType = "";
         this.depForm.id = "";
         this.depForm.pid = "";
         this.depForm.pName = "";
@@ -188,10 +195,10 @@
       submitDialog(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            if (this.dialogTitle === "新增部门") {
-              this.append();
-            } else {
+            if (this.submitType === "edit") {
               this.edit();
+            } else {
+              this.append();
             }
           }
         });
@@ -209,16 +216,22 @@
         add(childNode)
           .then(res => {
             childNode.id = res.data;
-            const nodeData = this.cueNodeData;
-            if (!nodeData.children) {
-              this.$set(nodeData, "children", []);
+            // 新增根目录
+            if (this.submitType === "addRoot") {
+              this.depTree.push(childNode)
+            } else {
+              // 新增普通子节点
+              const nodeData = this.cueNodeData;
+              if (!nodeData.children) {
+                this.$set(nodeData, "children", []);
+              }
+              nodeData.children.push(childNode);
             }
-            nodeData.children.push(childNode);
-            this.closeDialog();
             this.$message({
               message: '新增成功',
               type: 'success'
             });
+            this.closeDialog();
           })
           .catch(() => {
             this.closeDialog();
@@ -286,9 +299,6 @@
 </script>
 
 <style scoped>
-  .el-tree {
-    margin-top: 20px;
-  }
 
   .custom-tree-node {
     flex: 1;
