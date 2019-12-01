@@ -9,14 +9,17 @@
       default-expand-all
       :filter-node-method="filterNode"
       :expand-on-click-node="false"
-      ref="tree"
+      ref="dep_tree"
     >
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
         <span>
-          <el-button type="text" size="mini" @click="() => openDialogForAddChildren(data)">Append</el-button>
-          <el-button type="text" size="mini" @click="() => openDialogForEdit(node, data)">Edit</el-button>
-          <el-button type="text" size="mini" @click="() => remove(node, data)">Delete</el-button>
+          <el-button type="text" size="mini" icon="el-icon-folder-opened"
+                     @click="() => openDialogForAddChildren(data)">添加</el-button>
+          <el-button type="text" size="mini" icon="el-icon-edit"
+                     @click="() => openDialogForEdit(node, data)">编辑</el-button>
+          <el-button type="text" size="mini" icon="el-icon-delete"
+                     @click="() => remove(node, data)">删除</el-button>
         </span>
       </span>
     </el-tree>
@@ -87,7 +90,7 @@
 
     watch: {
       filterText(val) {
-        this.$refs.tree.filter(val);
+        this.$refs.dep_tree.filter(val);
       }
     },
 
@@ -105,7 +108,7 @@
         if (!value) {
           return true;
         }
-        return data.label.indexOf(value) !== -1;
+        return data.name.indexOf(value) !== -1;
       },
 
       /**
@@ -215,17 +218,22 @@
         };
         add(childNode)
           .then(res => {
-            childNode.id = res.data;
             // 新增根目录
             if (this.submitType === "addRoot") {
-              this.depTree.push(childNode)
+              if (this.depTree) {
+                // 已存在的追加
+                this.depTree.push(res.data);
+              } else {
+                // 不存在的初始化
+                this.depTree = new Array(res.data);
+              }
             } else {
               // 新增普通子节点
               const nodeData = this.cueNodeData;
               if (!nodeData.children) {
                 this.$set(nodeData, "children", []);
               }
-              nodeData.children.push(childNode);
+              nodeData.children.push(res.data);
             }
             this.$message({
               message: '新增成功',
@@ -234,7 +242,6 @@
             this.closeDialog();
           })
           .catch(() => {
-            this.closeDialog();
           });
       },
 
@@ -258,8 +265,7 @@
               type: 'success'
             });
           })
-          .catch(err => {
-            console.error(err);
+          .catch(() => {
           });
       },
 
@@ -269,7 +275,7 @@
        * @param data 要删除的节点数据
        */
       remove(node, data) {
-        this.$confirm('确定要删除' + data.name + '?', '提示', {
+        this.$confirm('确定要删除【' + data.name + '】部门?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -291,9 +297,7 @@
             });
         }).catch(() => {
         });
-
       }
-
     }
   };
 </script>
