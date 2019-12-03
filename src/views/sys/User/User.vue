@@ -8,14 +8,14 @@
         </div>
       </el-col>
     </el-row>
-    <el-table :data="users" @selection-change="selectChange" style="width: 100%">
+    <el-table :data="users" @selection-change="selectChange" style="width: 100%" stripe>
       <el-table-column type="selection" width="55" prop="id" />
-      <el-table-column sortable prop="username" label="账号" width="180" />
+      <el-table-column prop="username" label="账号" width="180" />
       <el-table-column prop="name" label="姓名" width="180" />
       <el-table-column prop="depName" label="部门" width="180" />
       <el-table-column prop="phone" label="电话" width="180" />
       <el-table-column prop="state" label="状态" width="180" />
-      <el-table-column prop="remark" label="备注" />
+      <el-table-column prop="remark" label="备注" show-overflow-tooltip />
       <el-table-column label="操作" fixed="right" width="150">
         <template slot-scope="scope">
           <el-button size="mini" type="primary" plain @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
@@ -25,6 +25,8 @@
     </el-table>
     <el-pagination
       background
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
       :page-sizes="[10, 20, 30, 50]"
       :page-size="10"
       layout="total, sizes, prev, pager, next, jumper"
@@ -89,6 +91,10 @@
           address: "",
           status: 0
         },
+        pageData: {
+          page: 1,
+          size: 10
+        },
         userBackup: Object.assign({}, this.user),
         multipleSelection: [],
         userFormVisible: false,
@@ -108,15 +114,25 @@
     },
 
     methods: {
+      /**
+       * 每页显示数量变化
+       */
+      handleSizeChange(val) {
+        this.pageData.size = val;
+      },
+
+      /**
+       * 当前页数变化
+       */
+      handleCurrentChange(val) {
+        this.pageData.page = val;
+      },
 
       /**
        * 分页
        */
       userPage() {
-        page({
-          "page": 1,
-          "size": 10
-        })
+        page(this.pageData)
           .then(res => {
             console.log(res);
             this.users = res.data.records;
