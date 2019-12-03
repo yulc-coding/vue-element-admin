@@ -8,7 +8,7 @@
         </div>
       </el-col>
     </el-row>
-    <el-table :data="users" @selection-change="selectChange" style="width: 100%" stripe>
+    <el-table :data="users" @selection-change="selectChange" style="width: 100%" v-loading="loading" stripe>
       <el-table-column type="selection" width="55" prop="id" />
       <el-table-column prop="username" label="账号" width="180" />
       <el-table-column prop="name" label="姓名" width="180" />
@@ -28,44 +28,36 @@
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
       :page-sizes="[10, 20, 30, 50]"
-      :page-size="10"
+      :page-size="size"
+      :current-page="page"
       layout="total, sizes, prev, pager, next, jumper"
-      :total="400"
+      :total="total"
     >
     </el-pagination>
     <el-dialog
       :title="dialogTitle"
-      width="600px"
+      width="400px"
       :visible.sync="userFormVisible"
       @close="resetForm('userForm')"
     >
-      <el-form :model="user" :rules="rules" ref="userForm">
+      <el-form :model="user" :rules="rules" ref="userForm" size="small">
         <el-form-item label="姓名" prop="name" label-width="50px">
-          <el-input v-model="user.name" autocomplete="off" />
+          <el-input v-model="user.name" maxlength="10" show-word-limit />
+        </el-form-item>
+        <el-form-item label="账号" label-width="50px">
+          <el-input v-model="user.username" maxlength="10" show-word-limit />
+        </el-form-item>
+        <el-form-item label="部门" label-width="50px">
+          <el-input v-model="user.depCode" />
         </el-form-item>
         <el-form-item label="手机" label-width="50px">
-          <el-input v-model="user.phone" autocomplete="off" />
+          <el-input v-model="user.phone" maxlength="11" show-word-limit />
         </el-form-item>
-        <el-form-item label="地址" label-width="50px">
-          <el-input v-model="user.address" autocomplete="off" />
+        <el-form-item label="性别" label-width="50px">
+          <el-input v-model="user.gender" />
         </el-form-item>
-        <el-form-item label="日期" label-width="50px">
-          <el-date-picker
-            v-model="user.date"
-            type="date"
-            value-format="yyyy-MM-dd"
-            placeholder="选择日期"
-          >
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item label="状态" label-width="50px">
-          <el-switch
-            v-model="user.status"
-            active-color="#13ce66"
-            inactive-color="#ff4949"
-            :active-value="1"
-            :inactive-value="0"
-          />
+        <el-form-item label="备注" label-width="50px">
+          <el-input v-model="user.remark" maxlength="25" show-word-limit />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -85,16 +77,18 @@
         users: [],
         user: {
           id: "",
-          date: "",
           name: "",
+          username: "",
+          depCode: "",
           phone: "",
-          address: "",
-          status: 0
+          gender: "",
+          remark: "",
+          avatar: ""
         },
-        pageData: {
-          page: 1,
-          size: 10
-        },
+        page: 1,
+        size: 10,
+        total: 0,
+        loading: false,
         userBackup: Object.assign({}, this.user),
         multipleSelection: [],
         userFormVisible: false,
@@ -118,27 +112,38 @@
        * 每页显示数量变化
        */
       handleSizeChange(val) {
-        this.pageData.size = val;
+        this.size = val;
+        this.userPage();
       },
 
       /**
        * 当前页数变化
        */
       handleCurrentChange(val) {
-        this.pageData.page = val;
+        this.page = val;
+        this.userPage();
       },
 
       /**
        * 分页
        */
       userPage() {
-        page(this.pageData)
+        this.loading = true;
+        page({
+          "page": this.page,
+          "size": this.size
+        })
           .then(res => {
             console.log(res);
-            this.users = res.data.records;
+            const resData = res.data;
+            this.users = resData.records;
+            this.page = resData.current;
+            this.total = resData.total;
+            this.loading = false;
           })
           .catch(err => {
             console.error(err);
+            this.loading = false;
           });
       },
 
