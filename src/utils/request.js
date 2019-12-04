@@ -3,12 +3,12 @@ import { MessageBox, Message } from "element-ui";
 import store from "@/store";
 import { getToken } from "@/utils/auth";
 
+// axios文档： http://www.axios-js.com/zh-cn/docs/#axios-request-config
 // create an axios instance
 const service = axios.create({
-  // url = base url + request url
+  // `baseURL` 将自动加在 `url` 前面，除非 `url` 是一个绝对 URL。
   baseURL: process.env.VUE_APP_BASE_API,
-  // withCredentials: true, // send cookies when cross-domain requests
-  // request timeout
+  // 指定请求超时的毫秒数(0 表示无超时时间)，超时请求将被中断
   timeout: 5000
 });
 

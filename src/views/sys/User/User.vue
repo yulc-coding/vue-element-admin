@@ -66,14 +66,14 @@
         <div class="dialog-right">
           <el-upload
             class="avatar-uploader"
-            action=""
+            :action="avatarAction"
+            :data="avatarParam"
             name="avatar"
-            :auto-upload="false"
             :show-file-list="false"
-            :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
+            :on-success="handleAvatarSuccess"
           >
-            <img v-if="user.avatar" :src="user.avatar" class="avatar" />
+            <img v-if="avatarPath" :src="avatarPath" class="avatar" />
             <i v-else class="el-icon-plus avatar-uploader-icon" />
           </el-upload>
         </div>
@@ -94,7 +94,7 @@
       return {
         users: [],
         user: {
-          id: "",
+          id: null,
           name: "",
           username: "",
           depCode: "",
@@ -107,6 +107,12 @@
         size: 10,
         total: 0,
         loading: false,
+        // 头像完整地址
+        avatarPath: "",
+        // 上传头像请求地址
+        avatarAction: process.env.VUE_APP_BASE_API + "/sys/user/uploadAvatar",
+        // 上传头像附带参数
+        avatarParam: {},
         userBackup: Object.assign({}, this.user),
         multipleSelection: [],
         userFormVisible: false,
@@ -293,16 +299,23 @@
        * @returns {boolean|boolean}
        */
       beforeAvatarUpload(file) {
-        console.log(file.type);
         const isJPG = file.type === 'image/jpeg' || file.type === "image/png";
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isJPG) {
           this.$message.error("只能上传 JPG 或者 PNG 格式");
+          return false;
         }
         if (!isLt2M) {
           this.$message.error('上传头像图片大小不能超过 2MB!');
+          return false;
         }
-        return isJPG && isLt2M;
+        if (this.user.id) {
+          // 赋值参数
+          this.avatarParam = {
+            id: this.user.id
+          }
+        }
+        return true;
       },
 
       /**
@@ -310,8 +323,17 @@
        * @param res
        */
       handleAvatarSuccess(res) {
-        console.log(res);
-        this.user.avatar = res.data;
+        if (res.code === 200) {
+          this.user.avatar = res.data;
+          // 头像的完整路径
+          this.avatarPath = process.env.VUE_APP_BASE_API + res.data;
+          this.$message({
+            message: "上传成功",
+            type: "success"
+          });
+        } else {
+          this.$message.error(res.msg);
+        }
       },
 
     }
