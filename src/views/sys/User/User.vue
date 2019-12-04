@@ -36,30 +36,48 @@
     </el-pagination>
     <el-dialog
       :title="dialogTitle"
-      width="400px"
+      width="700px"
       :visible.sync="userFormVisible"
       @close="resetForm('userForm')"
     >
-      <el-form :model="user" :rules="rules" ref="userForm" size="small">
-        <el-form-item label="姓名" prop="name" label-width="50px">
-          <el-input v-model="user.name" maxlength="10" show-word-limit />
-        </el-form-item>
-        <el-form-item label="账号" label-width="50px">
-          <el-input v-model="user.username" maxlength="10" show-word-limit />
-        </el-form-item>
-        <el-form-item label="部门" label-width="50px">
-          <el-input v-model="user.depCode" />
-        </el-form-item>
-        <el-form-item label="手机" label-width="50px">
-          <el-input v-model="user.phone" maxlength="11" show-word-limit />
-        </el-form-item>
-        <el-form-item label="性别" label-width="50px">
-          <el-input v-model="user.gender" />
-        </el-form-item>
-        <el-form-item label="备注" label-width="50px">
-          <el-input v-model="user.remark" maxlength="25" show-word-limit />
-        </el-form-item>
-      </el-form>
+      <div class="dialog-all">
+        <div class="dialog-left">
+          <el-form :model="user" :rules="rules" ref="userForm">
+            <el-form-item label="姓名" prop="name" label-width="50px">
+              <el-input v-model="user.name" maxlength="10" show-word-limit />
+            </el-form-item>
+            <el-form-item label="账号" label-width="50px">
+              <el-input v-model="user.username" maxlength="10" show-word-limit />
+            </el-form-item>
+            <el-form-item label="部门" label-width="50px">
+              <el-input v-model="user.depCode" />
+            </el-form-item>
+            <el-form-item label="手机" label-width="50px">
+              <el-input v-model="user.phone" maxlength="11" show-word-limit />
+            </el-form-item>
+            <el-form-item label="性别" label-width="50px">
+              <el-input v-model="user.gender" />
+            </el-form-item>
+            <el-form-item label="备注" label-width="50px">
+              <el-input v-model="user.remark" maxlength="25" show-word-limit />
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="dialog-right">
+          <el-upload
+            class="avatar-uploader"
+            action=""
+            name="avatar"
+            :auto-upload="false"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img v-if="user.avatar" :src="user.avatar" class="avatar" />
+            <i v-else class="el-icon-plus avatar-uploader-icon" />
+          </el-upload>
+        </div>
+      </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="userFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitUser('userForm')">确 定</el-button>
@@ -267,7 +285,35 @@
         this.dialogTitle = "新增";
         this.user = Object.assign({}, this.userBackup);
         this.userFormVisible = true;
-      }
+      },
+
+      /**
+       * 上传前处理
+       * @param file
+       * @returns {boolean|boolean}
+       */
+      beforeAvatarUpload(file) {
+        console.log(file.type);
+        const isJPG = file.type === 'image/jpeg' || file.type === "image/png";
+        const isLt2M = file.size / 1024 / 1024 < 2;
+        if (!isJPG) {
+          this.$message.error("只能上传 JPG 或者 PNG 格式");
+        }
+        if (!isLt2M) {
+          this.$message.error('上传头像图片大小不能超过 2MB!');
+        }
+        return isJPG && isLt2M;
+      },
+
+      /**
+       * 上传成功
+       * @param res
+       */
+      handleAvatarSuccess(res) {
+        console.log(res);
+        this.user.avatar = res.data;
+      },
+
     }
   };
 </script>
@@ -284,5 +330,50 @@
 
   .el-pagination {
     margin-top: 20px;
+  }
+
+  /* 表单和头像布局 */
+  .dialog-all {
+    display: inline-block;
+  }
+
+  .dialog-left {
+    display: block;
+    float: left;
+    width: 400px;
+  }
+
+  .dialog-right {
+    display: block;
+    float: right;
+    margin-left: 50px;
+  }
+
+  /* 上传头像相关 */
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
   }
 </style>
