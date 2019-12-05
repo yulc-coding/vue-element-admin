@@ -18,8 +18,8 @@
       <el-table-column prop="remark" label="备注" show-overflow-tooltip />
       <el-table-column label="操作" fixed="right" width="150">
         <template slot-scope="scope">
-          <el-button size="mini" type="primary" plain @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+          <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">编辑</el-button>
+          <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -47,10 +47,10 @@
             <el-form-item label="姓名" prop="name" label-width="50px">
               <el-input v-model="user.name" maxlength="10" show-word-limit />
             </el-form-item>
-            <el-form-item label="账号" label-width="50px">
+            <el-form-item label="账号" prop="username" label-width="50px">
               <el-input v-model="user.username" maxlength="10" show-word-limit />
             </el-form-item>
-            <el-form-item label="部门" label-width="50px">
+            <el-form-item label="部门" prop="depCode" label-width="50px">
               <el-select
                 ref="dep_select"
                 v-model="user.depCode"
@@ -71,8 +71,11 @@
             <el-form-item label="手机" label-width="50px">
               <el-input v-model="user.phone" maxlength="11" show-word-limit />
             </el-form-item>
-            <el-form-item label="性别" label-width="50px">
-              <el-input v-model="user.gender" />
+            <el-form-item label="性别" prop="gender" label-width="50px">
+              <el-select v-model="user.gender" placeholder="请选择">
+                <el-option value="1" label="男" />
+                <el-option value="2" label="女" />
+              </el-select>
             </el-form-item>
             <el-form-item label="备注" label-width="50px">
               <el-input v-model="user.remark" maxlength="25" show-word-limit />
@@ -104,7 +107,7 @@
 </template>
 
 <script>
-  import { getInfo, page } from "@/api/user";
+  import { add, del, delMulti, update, getInfo, page } from "@/api/user";
   import { tree } from "@/api/department";
 
   export default {
@@ -138,16 +141,14 @@
           children: 'children',
           label: 'name'
         },
-        userBackup: Object.assign({}, this.user),
         multipleSelection: [],
         userFormVisible: false,
         dialogTitle: "",
-        rowIndex: 9999,
         rules: {
-          name: [
-            { required: true, message: "请输入姓名", trigger: "blur" },
-            { min: 2, max: 5, message: "长度在 2 到 5 个字符", trigger: "blur" }
-          ]
+          name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
+          username: [{ required: true, message: "请输入账号", trigger: "blur" }],
+          depCode: [{ required: true, message: "请选择部门", trigger: "blur" }],
+          gender: [{ required: true, message: "请选择性别", trigger: "blur" }]
         }
       };
     },
@@ -210,19 +211,6 @@
       },
 
       /**
-       * 获取明细
-       */
-      userDetail(userId) {
-        getInfo(userId)
-          .then(res => {
-            console.log(res);
-          })
-          .catch(err => {
-            console.error(err);
-          });
-      },
-
-      /**
        * 部门下拉过滤
        */
       filterSelect(value) {
@@ -252,20 +240,48 @@
       },
 
       /**
-       * 编辑
-       * @param index
-       * @param row
+       * 新增
        */
-      handleEdit(index, row) {
-        this.dialogTitle = "编辑";
-        this.user = Object.assign({}, row);
+      handleAdd() {
+        this.dialogTitle = "新增";
         this.userFormVisible = true;
-        this.rowIndex = index;
-      }
-      ,
+      },
 
       /**
-       * 提交表单
+       * 编辑
+       * @param row
+       */
+      handleEdit(row) {
+        getInfo(row.id)
+          .then(res => {
+            console.log(res);
+            this.user = res.data;
+            if (this.user.avatar) {
+              // 头像的完整路径
+              this.avatarPath = process.env.VUE_APP_BASE_API + this.user.avatar;
+            }
+            this.dialogTitle = "编辑";
+            this.userFormVisible = true;
+          })
+          .catch(() => {
+          });
+      },
+
+      /**
+       * 新增修改后刷新表格
+       * @param id 用来判断修改还是新增
+       */
+      refreshTable(id) {
+        this.userFormVisible = false;
+        this.$message({
+          type: "success",
+          message: id ? "修改成功！" : "新增成功！"
+        });
+        this.userPage();
+      },
+
+      /**
+       * 提交表单（新增或者修改）
        * @param formName
        */
       submitUser(formName) {
@@ -273,47 +289,63 @@
         this.$refs[formName].validate(valid => {
           if (valid) {
             let id = this.user.id;
+            let data = {
+              name: this.user.name,
+              username: this.user.username,
+              depCode: this.user.depCode,
+              phone: this.user.phone,
+              gender: this.user.gender,
+              remark: this.user.remark
+            };
             if (id) {
               // id非空-修改
-              this.users.splice(this.rowIndex, 1, this.user);
+              data.id = id;
+              update(data)
+                .then(() => {
+                  this.refreshTable(id);
+                })
+                .catch(() => {
+                });
             } else {
               // id为空-新增
-              this.user.id = this.users.length + 1;
-              this.users.unshift(this.user);
+              data.avatar = this.user.avatar;
+              add(data)
+                .then(() => {
+                  this.refreshTable();
+                })
+                .catch(() => {
+                });
             }
-            this.userFormVisible = false;
-            this.$message({
-              type: "success",
-              message: id ? "修改成功！" : "新增成功！"
-            });
           }
         });
-      }
-      ,
+      },
 
       /**
        * 删除单条
-       * @param index
        * @param row
        */
-      handleDelete(index, row) {
+      handleDelete(row) {
         this.$confirm(`确定删除用户 【${row.name}】 吗?`, "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
         })
           .then(() => {
-            this.users.splice(index, 1);
-            this.$message({
-              type: "success",
-              message: "删除成功!"
-            });
+            del(row.id)
+              .then(() => {
+                this.$message({
+                  type: "success",
+                  message: "删除成功!"
+                });
+                // 刷新表格
+                this.userPage();
+              })
+              .catch(() => {
+              });
           })
           .catch(() => {
-            console.log("取消删除");
           });
-      }
-      ,
+      },
 
       /**
        * 重置表单
@@ -321,8 +353,14 @@
        */
       resetForm(formName) {
         this.$refs[formName].clearValidate();
-      }
-      ,
+      },
+
+      /**
+       * 选中表格数据
+       */
+      selectChange(val) {
+        this.multipleSelection = val;
+      },
 
       /**
        * 批量删除
@@ -332,7 +370,7 @@
         if (len === 0) {
           this.$message({
             type: "warning",
-            message: "请至少选择一项！"
+            message: "请至少选择一条数据！"
           });
         } else {
           this.$confirm(`确定删除选中的 ${len} 个用户吗？`, "提示", {
@@ -341,31 +379,24 @@
             type: "warning"
           })
             .then(() => {
-              this.$message({
-                type: "success",
-                message: `成功删除了${len}条数据！`
-              });
+              const data = {
+                idParam: this.multipleSelection
+              };
+              delMulti(data)
+                .then(() => {
+                  this.$message({
+                    type: "success",
+                    message: `成功删除了${len}条数据！`
+                  });
+                  this.userPage();
+                })
+                .catch(() => {
+                });
             })
             .catch(() => {
-              console.log("取消删除");
             });
         }
-      }
-      ,
-      selectChange(val) {
-        this.multipleSelection = val;
-      }
-      ,
-
-      /**
-       * 新增
-       */
-      handleAdd() {
-        this.dialogTitle = "新增";
-        this.user = Object.assign({}, this.userBackup);
-        this.userFormVisible = true;
-      }
-      ,
+      },
 
       /**
        * 上传前处理
@@ -390,8 +421,7 @@
           }
         }
         return true;
-      }
-      ,
+      },
 
       /**
        * 上传成功
@@ -410,11 +440,9 @@
           this.$message.error(res.msg);
         }
       }
-      ,
 
     }
-  }
-  ;
+  };
 </script>
 
 <style scoped>

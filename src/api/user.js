@@ -24,6 +24,18 @@ export function del(id) {
 }
 
 /**
+ * 批量删除
+ * @param ids 主键ID列表
+ */
+export function delMulti(ids) {
+  return request({
+    url: "/sys/user/delMulti",
+    method: "post",
+    ids
+  });
+}
+
+/**
  * 更新
  * @param data
  */
