@@ -8,7 +8,6 @@
       :props="defaultProps"
       default-expand-all
       :filter-node-method="filterNode"
-      :expand-on-click-node="false"
       ref="dep_tree"
     >
       <span class="custom-tree-node" slot-scope="{ node, data }">
@@ -90,6 +89,7 @@
 
     watch: {
       filterText(val) {
+        console.log("change");
         this.$refs.dep_tree.filter(val);
       }
     },

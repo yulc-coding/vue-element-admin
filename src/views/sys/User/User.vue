@@ -41,6 +41,7 @@
       @close="resetForm('userForm')"
     >
       <div class="dialog-all">
+        <!-- 用户表单 -->
         <div class="dialog-left">
           <el-form :model="user" :rules="rules" ref="userForm">
             <el-form-item label="姓名" prop="name" label-width="50px">
@@ -50,7 +51,22 @@
               <el-input v-model="user.username" maxlength="10" show-word-limit />
             </el-form-item>
             <el-form-item label="部门" label-width="50px">
-              <el-input v-model="user.depCode" />
+              <el-select
+                ref="dep_select"
+                v-model="user.depCode"
+                :value-key="user.depCode"
+                filterable
+                :filter-method="filterSelect"
+              >
+                <el-option :value="user.depCode" :label="user.depName" class="hidden" />
+                <el-tree
+                  ref="dep_tree"
+                  :data="treeData"
+                  :props="defaultProps"
+                  :filter-node-method="filterTree"
+                  @node-click="handleTreeNodeClick"
+                />
+              </el-select>
             </el-form-item>
             <el-form-item label="手机" label-width="50px">
               <el-input v-model="user.phone" maxlength="11" show-word-limit />
@@ -63,6 +79,7 @@
             </el-form-item>
           </el-form>
         </div>
+        <!-- 头像上传 -->
         <div class="dialog-right">
           <el-upload
             class="avatar-uploader"
@@ -80,14 +97,15 @@
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="userFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitUser('userForm')">确 定</el-button>
+        <el-button type="primary" @click="submitUser('userForm')">提 交</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-  import { getInfo, page } from '@/api/user';
+  import { getInfo, page } from "@/api/user";
+  import { tree } from "@/api/department";
 
   export default {
     data() {
@@ -98,6 +116,7 @@
           name: "",
           username: "",
           depCode: "",
+          depName: "",
           phone: "",
           gender: "",
           remark: "",
@@ -113,6 +132,12 @@
         avatarAction: process.env.VUE_APP_BASE_API + "/sys/user/uploadAvatar",
         // 上传头像附带参数
         avatarParam: {},
+        valueTitle: "",
+        treeData: [],
+        defaultProps: {
+          children: 'children',
+          label: 'name'
+        },
         userBackup: Object.assign({}, this.user),
         multipleSelection: [],
         userFormVisible: false,
@@ -129,6 +154,7 @@
 
     mounted() {
       this.userPage();
+      this.getTree();
     },
 
     methods: {
@@ -158,7 +184,6 @@
           "size": this.size
         })
           .then(res => {
-            console.log(res);
             const resData = res.data;
             this.users = resData.records;
             this.page = resData.current;
@@ -168,6 +193,19 @@
           .catch(err => {
             console.error(err);
             this.loading = false;
+          });
+      },
+
+      /**
+       * 获取树
+       */
+      getTree() {
+        tree()
+          .then(res => {
+            this.treeData = res.data.children;
+          })
+          .catch(err => {
+            console.error(err);
           });
       },
 
@@ -185,6 +223,35 @@
       },
 
       /**
+       * 部门下拉过滤
+       */
+      filterSelect(value) {
+        this.$refs.dep_tree.filter(value);
+      },
+
+      /**
+       * 过滤树节点
+       * @param value 输入框的值
+       * @param data 具体的数据
+       */
+      filterTree(value, data) {
+        if (!value) {
+          return true;
+        }
+        return data.name.indexOf(value) !== -1;
+      },
+
+      /**
+       * 选择树节点
+       */
+      handleTreeNodeClick(data) {
+        this.user.depCode = data.code;
+        this.user.depName = data.name;
+        this.$refs.dep_select.visible = false;
+        this.filterSelect("");
+      },
+
+      /**
        * 编辑
        * @param index
        * @param row
@@ -194,7 +261,8 @@
         this.user = Object.assign({}, row);
         this.userFormVisible = true;
         this.rowIndex = index;
-      },
+      }
+      ,
 
       /**
        * 提交表单
@@ -220,7 +288,8 @@
             });
           }
         });
-      },
+      }
+      ,
 
       /**
        * 删除单条
@@ -243,7 +312,8 @@
           .catch(() => {
             console.log("取消删除");
           });
-      },
+      }
+      ,
 
       /**
        * 重置表单
@@ -251,7 +321,8 @@
        */
       resetForm(formName) {
         this.$refs[formName].clearValidate();
-      },
+      }
+      ,
 
       /**
        * 批量删除
@@ -279,10 +350,12 @@
               console.log("取消删除");
             });
         }
-      },
+      }
+      ,
       selectChange(val) {
         this.multipleSelection = val;
-      },
+      }
+      ,
 
       /**
        * 新增
@@ -291,7 +364,8 @@
         this.dialogTitle = "新增";
         this.user = Object.assign({}, this.userBackup);
         this.userFormVisible = true;
-      },
+      }
+      ,
 
       /**
        * 上传前处理
@@ -316,7 +390,8 @@
           }
         }
         return true;
-      },
+      }
+      ,
 
       /**
        * 上传成功
@@ -334,10 +409,12 @@
         } else {
           this.$message.error(res.msg);
         }
-      },
+      }
+      ,
 
     }
-  };
+  }
+  ;
 </script>
 
 <style scoped>
