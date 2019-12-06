@@ -5,21 +5,23 @@
         <div class="tool-box">
           <el-button type="primary" icon="el-icon-circle-plus-outline" size="small" @click="handleAdd">新增</el-button>
           <el-button type="danger" icon="el-icon-delete" size="small" @click="mulDelete">批量删除</el-button>
+          <el-button type="danger" icon="el-icon-delete" size="small" @click="handleBindRole">绑定角色</el-button>
         </div>
       </el-col>
     </el-row>
     <el-table :data="users" @selection-change="selectChange" style="width: 100%" v-loading="loading" stripe>
-      <el-table-column type="selection" width="55" prop="id" />
-      <el-table-column prop="username" label="账号" width="180" />
-      <el-table-column prop="name" label="姓名" width="180" />
-      <el-table-column prop="depName" label="部门" width="180" />
-      <el-table-column prop="phone" label="电话" width="180" />
-      <el-table-column prop="state" label="状态" width="180" />
+      <el-table-column type="selection" width="50" prop="id" />
+      <el-table-column prop="username" label="账号" width="100" />
+      <el-table-column prop="name" label="姓名" width="150" />
+      <el-table-column prop="depName" label="部门" width="150" />
+      <el-table-column prop="phone" label="电话" width="120" />
+      <el-table-column prop="state" label="状态" width="80" />
       <el-table-column prop="remark" label="备注" show-overflow-tooltip />
-      <el-table-column label="操作" fixed="right" width="150">
+      <el-table-column label="操作" fixed="right" width="240">
         <template slot-scope="scope">
           <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">编辑</el-button>
           <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+          <el-button size="mini" type="danger" @click="handleResetPwd(scope.row)">重置密码</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -106,7 +108,7 @@
 </template>
 
 <script>
-  import { add, del, delMulti, update, getInfo, page } from "@/api/user";
+  import { add, del, delMulti, update, getInfo, page, resetPwd, getUserRoles, bindRole } from "@/api/user";
   import { tree } from "@/api/department";
 
   export default {
@@ -238,6 +240,14 @@
       },
 
       /**
+       * 重置dialog
+       */
+      resetDialog() {
+        this.user = {};
+        this.avatarPath = "";
+      },
+
+      /**
        * 新增
        */
       handleAdd() {
@@ -347,11 +357,26 @@
       },
 
       /**
-       * 重置dialog
+       * 重置密码
+       * @param row
        */
-      resetDialog() {
-        this.user = {};
-        this.avatarPath = "";
+      handleResetPwd(row) {
+        this.$confirm(`确定重置用户【${row.name}】的密码吗?`, "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(() => {
+          resetPwd(row.id)
+            .then(() => {
+              this.$message({
+                type: "success",
+                message: "重置密码成功!"
+              });
+            })
+            .catch(() => {
+            });
+        }).catch(() => {
+        });
       },
 
       /**
@@ -363,7 +388,6 @@
           ids.push(item.id);
         });
         this.multipleSelection = ids;
-        console.log(this.multipleSelection);
       },
 
       /**
@@ -396,6 +420,26 @@
             })
             .catch(() => {
             });
+        }
+      },
+
+      /**
+       * 绑定角色
+       * 单个用户时，先获取当前用户的角色信息
+       * 批量绑定时，强制重置所有用户的角色信息
+       */
+      handleBindRole() {
+        let len = this.multipleSelection.length;
+        if (len === 0) {
+          this.$message({
+            type: "warning",
+            message: "请至少选择一条数据！"
+          });
+        } else if (len === 1) {
+          console.log(this.multipleSelection[0]);
+          // getUserRoles(this.multipleSelection[0].id)
+        } else {
+          console.log(this.multipleSelection);
         }
       },
 

@@ -73,7 +73,18 @@ export function getInfo(id) {
 }
 
 /**
- * 绑定角色
+ * 获取用户角色列表
+ * @param userId
+ */
+export function getUserRoles(userId) {
+  return request({
+    url: "/sys/user/userRoles/" + userId,
+    method: "get"
+  });
+}
+
+/**
+ * 绑定角色（批量）
  * @param data
  */
 export function bindRole(data) {
@@ -85,13 +96,12 @@ export function bindRole(data) {
 }
 
 /**
- * 修改密码
- * @param data
+ * 重置密码
+ * @param id
  */
-export function changePwd(data) {
+export function resetPwd(id) {
   return request({
-    url: "/sys/user/changePwd",
-    method: "post",
-    data
+    url: "/sys/user/resetPwd/" + id,
+    method: "get"
   });
 }
