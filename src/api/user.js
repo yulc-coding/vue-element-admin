@@ -31,7 +31,9 @@ export function delMulti(ids) {
   return request({
     url: "/sys/user/delMulti",
     method: "post",
-    ids
+    data: {
+      idList: ids
+    }
   });
 }
 

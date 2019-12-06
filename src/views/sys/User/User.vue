@@ -38,7 +38,7 @@
       :title="dialogTitle"
       width="700px"
       :visible.sync="userFormVisible"
-      @close="resetForm('userForm')"
+      @close="resetDialog()"
     >
       <div class="dialog-all">
         <!-- 用户表单 -->
@@ -87,7 +87,6 @@
           <el-upload
             class="avatar-uploader"
             :action="avatarAction"
-            :data="avatarParam"
             name="avatar"
             :show-file-list="false"
             :before-upload="beforeAvatarUpload"
@@ -134,7 +133,6 @@
         // 上传头像请求地址
         avatarAction: process.env.VUE_APP_BASE_API + "/sys/user/uploadAvatar",
         // 上传头像附带参数
-        avatarParam: {},
         valueTitle: "",
         treeData: [],
         defaultProps: {
@@ -254,11 +252,12 @@
       handleEdit(row) {
         getInfo(row.id)
           .then(res => {
-            console.log(res);
             this.user = res.data;
             if (this.user.avatar) {
               // 头像的完整路径
               this.avatarPath = process.env.VUE_APP_BASE_API + this.user.avatar;
+            } else {
+              this.avatarPath = "";
             }
             this.dialogTitle = "编辑";
             this.userFormVisible = true;
@@ -295,7 +294,8 @@
               depCode: this.user.depCode,
               phone: this.user.phone,
               gender: this.user.gender,
-              remark: this.user.remark
+              remark: this.user.remark,
+              avatar: this.user.avatar
             };
             if (id) {
               // id非空-修改
@@ -308,7 +308,6 @@
                 });
             } else {
               // id为空-新增
-              data.avatar = this.user.avatar;
               add(data)
                 .then(() => {
                   this.refreshTable();
@@ -348,18 +347,23 @@
       },
 
       /**
-       * 重置表单
-       * @param formName
+       * 重置dialog
        */
-      resetForm(formName) {
-        this.$refs[formName].clearValidate();
+      resetDialog() {
+        this.user = {};
+        this.avatarPath = "";
       },
 
       /**
        * 选中表格数据
        */
       selectChange(val) {
-        this.multipleSelection = val;
+        let ids = [];
+        val.forEach(item => {
+          ids.push(item.id);
+        });
+        this.multipleSelection = ids;
+        console.log(this.multipleSelection);
       },
 
       /**
@@ -379,10 +383,7 @@
             type: "warning"
           })
             .then(() => {
-              const data = {
-                idParam: this.multipleSelection
-              };
-              delMulti(data)
+              delMulti(this.multipleSelection)
                 .then(() => {
                   this.$message({
                     type: "success",
@@ -413,12 +414,6 @@
         if (!isLt2M) {
           this.$message.error('上传头像图片大小不能超过 2MB!');
           return false;
-        }
-        if (this.user.id) {
-          // 赋值参数
-          this.avatarParam = {
-            id: this.user.id
-          }
         }
         return true;
       },
