@@ -45,7 +45,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ## 角色管理（待开发）
 
 
-## 菜单管理（待开发）
+## 菜单管理（完成）
 
 ## 统计报表（待开发）
 

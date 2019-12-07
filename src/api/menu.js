@@ -41,7 +41,17 @@ export function update(data) {
 export function tree() {
   return request({
     url: "/sys/menu/tree",
-    method: "post"
+    method: "get"
+  });
+}
+
+/**
+ * 获取基础的部门树结构
+ */
+export function simpleTree() {
+  return request({
+    url: "/sys/menu/simpleTree",
+    method: "get"
   });
 }
 

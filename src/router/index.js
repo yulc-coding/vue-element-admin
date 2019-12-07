@@ -5,7 +5,7 @@ import Home from "../views/Home/Home";
 import Department from "../views/sys/Department/Department";
 import User from "../views/sys/User/User";
 import Role from "../views/sys/Role/Role";
-import Permission from "../views/sys/Permission/Permission";
+import Menu from "../views/sys/Menu/Menu";
 import NotFound from "../views/NotFound";
 
 Vue.use(VueRouter);
@@ -32,8 +32,8 @@ const routes = [
         component: Role
       },
       {
-        path: "/sys/permission",
-        component: Permission
+        path: "/sys/menu",
+        component: Menu
       },
       {
         path: "/404",

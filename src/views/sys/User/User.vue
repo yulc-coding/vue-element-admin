@@ -3,9 +3,9 @@
     <el-row>
       <el-col :span="24">
         <div class="tool-box">
-          <el-button type="primary" icon="el-icon-circle-plus-outline" size="small" @click="handleAdd">新增</el-button>
+          <el-button type="primary" icon="el-icon-plus" size="small" @click="handleAdd">新增</el-button>
           <el-button type="danger" icon="el-icon-delete" size="small" @click="mulDelete">批量删除</el-button>
-          <el-button type="danger" icon="el-icon-delete" size="small" @click="handleBindRole">绑定角色</el-button>
+          <el-button type="warning" icon="el-icon-connection" size="small" @click="handleBindRole">绑定角色</el-button>
         </div>
       </el-col>
     </el-row>
@@ -20,8 +20,8 @@
       <el-table-column label="操作" fixed="right" width="240">
         <template slot-scope="scope">
           <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">编辑</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
-          <el-button size="mini" type="danger" @click="handleResetPwd(scope.row)">重置密码</el-button>
+          <el-button size="mini" type="danger" plain @click="handleDelete(scope.row)">删除</el-button>
+          <el-button size="mini" type="warning" plain @click="handleResetPwd(scope.row)">重置密码</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -65,6 +65,7 @@
                   ref="dep_tree"
                   :data="treeData"
                   :props="defaultProps"
+                  default-expand-all
                   :filter-node-method="filterTree"
                   @node-click="handleTreeNodeClick"
                 />
@@ -442,6 +443,7 @@
           console.log(this.multipleSelection);
         }
       },
+
 
       /**
        * 上传前处理
