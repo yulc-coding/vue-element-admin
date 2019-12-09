@@ -45,20 +45,21 @@
       <div class="dialog-all">
         <!-- 用户表单 -->
         <div class="dialog-left">
-          <el-form :model="user" :rules="rules" ref="userForm">
-            <el-form-item label="姓名" prop="name" label-width="50px">
+          <el-form :model="user" :rules="rules" ref="userForm" label-width="50px">
+            <el-form-item label="姓名" prop="name">
               <el-input v-model="user.name" maxlength="10" show-word-limit />
             </el-form-item>
-            <el-form-item label="账号" prop="username" label-width="50px">
+            <el-form-item label="账号" prop="username">
               <el-input v-model="user.username" maxlength="10" show-word-limit />
             </el-form-item>
-            <el-form-item label="部门" prop="depCode" label-width="50px">
+            <el-form-item label="部门" prop="depCode">
               <el-select
                 ref="dep_select"
                 v-model="user.depCode"
                 :value-key="user.depCode"
                 filterable
                 :filter-method="filterSelect"
+                class="form-item"
               >
                 <el-option :value="user.depCode" :label="user.depName" class="hidden" />
                 <el-tree
@@ -71,16 +72,16 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="手机" label-width="50px">
+            <el-form-item label="手机">
               <el-input v-model="user.phone" maxlength="11" show-word-limit />
             </el-form-item>
-            <el-form-item label="性别" prop="gender" label-width="50px">
-              <el-select v-model="user.gender" placeholder="请选择">
+            <el-form-item label="性别" prop="gender">
+              <el-select v-model="user.gender" placeholder="请选择" class="form-item">
                 <el-option value="1" label="男" />
                 <el-option value="2" label="女" />
               </el-select>
             </el-form-item>
-            <el-form-item label="备注" label-width="50px">
+            <el-form-item label="备注">
               <el-input v-model="user.remark" maxlength="25" show-word-limit />
             </el-form-item>
           </el-form>
@@ -543,5 +544,9 @@
     width: 178px;
     height: 178px;
     display: block;
+  }
+
+  .form-item {
+    width: 100%;
   }
 </style>
