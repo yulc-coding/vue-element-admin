@@ -46,12 +46,23 @@ export function list() {
 }
 
 /**
+ * 获取角色的菜单列表
+ * @param roleId
+ */
+export function roleMenus(roleId) {
+  return request({
+    url: "/sys/role/roleMenus/" + roleId,
+    method: "get"
+  });
+}
+
+/**
  * 角色绑定菜单
  * @param data
  */
-export function bindMenu(data) {
+export function bindMenus(data) {
   return request({
-    url: "/sys/role/bindMenu",
+    url: "/sys/role/bindMenus",
     method: "post",
     data
   });

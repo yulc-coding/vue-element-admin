@@ -1,18 +1,27 @@
 <template>
   <div>
-    <el-row>
-      <el-col :span="24">
-        <div class="tool-box">
-          <el-button type="primary" icon="el-icon-plus" size="small" @click="handleAdd">新增</el-button>
-          <el-button type="warning" icon="el-icon-edit" size="small" @click="handleEdit">编辑</el-button>
-          <el-button type="danger" icon="el-icon-delete" size="small" @click="handleDel">删除</el-button>
-        </div>
+    <el-row :gutter="20">
+      <el-col :span="16">
+        <el-button type="primary" icon="el-icon-plus" size="small" @click="handleAdd">新增</el-button>
+        <el-button type="warning" icon="el-icon-edit" size="small" @click="handleEdit">编辑</el-button>
+        <el-button type="danger" icon="el-icon-delete" size="small" @click="handleDel">删除</el-button>
+      </el-col>
+      <el-col :span="8">
+        <el-button
+          icon="el-icon-connection"
+          size="small"
+          :disabled="disableBindMenu"
+          @click="roleBindMenus"
+          :loading="bindLoading"
+        >
+          保存权限
+        </el-button>
       </el-col>
     </el-row>
     <el-divider />
     <el-row :gutter="20">
       <!-- 角色列表 -->
-      <el-col :span="14">
+      <el-col :span="16">
         <el-table :data="roleList" @row-click="rowClick" @row-dblclick="rowDbClick" v-loading="roleLoading"
                   highlight-current-row>
           <el-table-column prop="name" label="角色" width="200" />
@@ -20,12 +29,17 @@
         </el-table>
       </el-col>
       <!-- 菜单树 -->
-      <el-col :span="10">
+      <el-col :span="8">
         <el-tree
+          ref="menu_tree"
           :data="menuTree"
           :props="defaultProps"
+          node-key="id"
+          show-checkbox
           default-expand-all
+          check-on-click-node
           :expand-on-click-node="false"
+          :default-checked-keys="defaultChecked"
           v-loading="treeLoading"
         />
       </el-col>
@@ -54,7 +68,7 @@
 
 <script>
   import { simpleTree } from "@/api/menu";
-  import { add, del, update, list } from "@/api/role";
+  import { add, del, update, list, roleMenus, bindMenus } from "@/api/role";
 
   export default {
     name: "Role",
@@ -66,24 +80,37 @@
           name: "",
           remark: ""
         },
+        roleId: "",
         menuTree: [],
         defaultProps: {
           children: "children",
           label: "name"
         },
+        defaultChecked: [],
         roleFormVisible: false,
         dialogTitle: "",
         rules: {
           name: [{ required: true, message: "请输入名称", trigger: "blur" }]
         },
         treeLoading: false,
-        roleLoading: false
+        roleLoading: false,
+        bindLoading: false,
+        disableBindMenu: true
       }
     },
 
     mounted() {
       this.getRoleList();
       this.getMenuTree();
+    },
+
+    watch: {
+      roleId(newId) {
+        this.getRoleMenus(newId);
+        if (this.disableBindMenu) {
+          this.disableBindMenu = false;
+        }
+      }
     },
 
     methods: {
@@ -116,6 +143,21 @@
       },
 
       /**
+       * 获取角色已有的菜单列表
+       * @param roleId 角色ID
+       */
+      getRoleMenus(roleId) {
+        this.treeLoading = true;
+        roleMenus(roleId)
+          .then(res => {
+            this.defaultChecked = res.data;
+            this.treeLoading = false;
+          })
+          .catch(() => {
+          })
+      },
+
+      /**
        * 重置表单
        */
       resetForm() {
@@ -136,6 +178,7 @@
           name: row.name,
           remark: row.remark
         };
+        this.roleId = row.id;
       },
 
       /**
@@ -257,11 +300,33 @@
           })
       },
 
+
+      /**
+       * 角色绑定菜单
+       */
+      roleBindMenus() {
+        this.bindLoading = true;
+        const data = {
+          roleId: this.roleId,
+          menuIds: this.$refs.menu_tree.getCheckedKeys()
+        };
+        bindMenus(data)
+          .then(() => {
+            this.$message({
+              type: "success",
+              message: "绑定成功！"
+            });
+            this.bindLoading = false;
+          })
+          .catch(() => {
+          })
+      }
+
+
     }
 
   }
 </script>
 
 <style scoped>
-
 </style>

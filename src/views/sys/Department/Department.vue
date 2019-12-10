@@ -89,7 +89,6 @@
 
     watch: {
       filterText(val) {
-        console.log("change");
         this.$refs.dep_tree.filter(val);
       }
     },
