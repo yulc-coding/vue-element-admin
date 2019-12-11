@@ -63,15 +63,17 @@
                 :filter-method="filterSelect"
                 class="form-item"
               >
-                <el-option :value="user.depCode" :label="user.depName" class="hidden" />
-                <el-tree
-                  ref="dep_tree"
-                  :data="treeData"
-                  :props="defaultProps"
-                  default-expand-all
-                  :filter-node-method="filterTree"
-                  @node-click="handleTreeNodeClick"
-                />
+                <el-option :value="user.depCode" :label="user.depName" class="tree-option">
+                  <el-tree
+                    ref="dep_tree"
+                    :data="treeData"
+                    :props="defaultProps"
+                    default-expand-all
+                    :expand-on-click-node="false"
+                    :filter-node-method="filterTree"
+                    @node-click="handleTreeNodeClick"
+                  />
+                </el-option>
               </el-select>
             </el-form-item>
             <el-form-item label="手机">
@@ -99,7 +101,7 @@
             :on-success="handleAvatarSuccess"
           >
             <img v-if="avatarPath" :src="avatarPath" class="avatar" />
-            <i v-else class="el-icon-plus avatar-uploader-icon" />
+            <i v-else class="el-icon-plus avatar-uploader-icon" >添加头像</i>
           </el-upload>
         </div>
       </div>
@@ -669,8 +671,20 @@
     margin-left: 50px;
   }
 
+  /* 下拉树样式 */
+  .tree-option {
+    height: auto;
+    padding: 0;
+    font-weight: normal;
+  }
+
+  /* 节点的间距 */
+  ul li >>> .el-tree .el-tree-node__content {
+    height: auto;
+  }
+
   /* 上传头像相关 */
-  .avatar-uploader .el-upload {
+  .avatar-uploader {
     border: 1px dashed #d9d9d9;
     border-radius: 6px;
     cursor: pointer;
@@ -678,7 +692,7 @@
     overflow: hidden;
   }
 
-  .avatar-uploader .el-upload:hover {
+  .avatar-uploader:hover {
     border-color: #409EFF;
   }
 

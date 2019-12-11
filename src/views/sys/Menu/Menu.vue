@@ -33,7 +33,8 @@
                       :props="defaultProps"
                       default-expand-all
                       :expand-on-click-node="false"
-                      @node-click="chooseMenu" />
+                      @node-click="chooseMenu"
+                    />
                   </el-option>
                 </el-select>
               </el-form-item>
