@@ -36,10 +36,12 @@
       :total="total"
     >
     </el-pagination>
+    <!-- 用户新增修改 -->
     <el-dialog
       :title="dialogTitle"
       width="700px"
       :visible.sync="userFormVisible"
+      :close-on-click-modal="false"
       @close="resetDialog()"
     >
       <div class="dialog-all">
@@ -103,7 +105,48 @@
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="userFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitUser('userForm')">提 交</el-button>
+        <el-button type="primary" @click="submitUser('userForm')" :loading="userLoading">提 交</el-button>
+      </div>
+    </el-dialog>
+    <!-- 角色绑定 -->
+    <el-dialog
+      title="绑定角色"
+      width="500px"
+      :close-on-click-modal="false"
+      :visible.sync="roleFormVisible"
+    >
+      <el-form :model="userRoleForm" ref="userRoleForm" label-width="50px">
+        <!-- 已存在的角色  -->
+        <el-form-item
+          v-for="(role, index) in userRoles"
+          label="角色"
+          :key="role.key"
+        >
+          <el-input v-model="role.value" class="role-form-item" />
+          <el-button icon="el-icon-delete" @click.prevent="removeExistsRole(index)" class="role-form-remove" />
+        </el-form-item>
+        <!-- 新增的角色  -->
+        <el-form-item
+          v-for="(roleId, index) in userRoleForm.roleIds"
+          label="角色"
+          :key="'role' + roleId + index"
+        >
+          <el-select v-model="userRoleForm.roleIds[index]" @change="chooseRole($event, index)" class="role-form-item">
+            <el-option
+              v-for="item in roleSelect"
+              :key="'role-select' + item.key + index"
+              :label="item.value"
+              :value="item.key"
+            />
+          </el-select>
+          <el-button v-if="index !== userRoleForm.roleIds.length - 1" icon="el-icon-delete"
+                     @click.prevent="removeSelectRole(index)"
+                     class="role-form-remove" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer">
+        <el-button @click="roleFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="userBindRole" :loading="bindLoading">提 交</el-button>
       </div>
     </el-dialog>
   </div>
@@ -112,6 +155,7 @@
 <script>
   import { add, del, delMulti, update, getInfo, page, resetPwd, getUserRoles, bindRole } from "@/api/user";
   import { tree } from "@/api/department";
+  import { roleSelect } from "@/api/role";
 
   export default {
     data() {
@@ -144,6 +188,7 @@
           label: 'name'
         },
         multipleSelection: [],
+        userLoading: false,
         userFormVisible: false,
         dialogTitle: "",
         rules: {
@@ -151,13 +196,24 @@
           username: [{ required: true, message: "请输入账号", trigger: "blur" }],
           depCode: [{ required: true, message: "请选择部门", trigger: "blur" }],
           gender: [{ required: true, message: "请选择性别", trigger: "blur" }]
-        }
+        },
+        // 角色下拉（K,V）
+        roleSelect: [],
+        // 用户已有的角色列表（K,V）
+        userRoles: [],
+        // 角色表单新增的角色ID列表
+        userRoleForm: {
+          roleIds: [""]
+        },
+        bindLoading: false,
+        roleFormVisible: false
       };
     },
 
     mounted() {
       this.userPage();
       this.getTree();
+      this.getRoleSelect();
     },
 
     methods: {
@@ -178,7 +234,7 @@
       },
 
       /**
-       * 分页
+       * 用户分页
        */
       userPage() {
         this.loading = true;
@@ -209,6 +265,16 @@
           })
           .catch(err => {
             console.error(err);
+          });
+      },
+
+      /**
+       * 获取角色下拉
+       */
+      getRoleSelect() {
+        roleSelect()
+          .then(res => this.roleSelect = res.data)
+          .catch(() => {
           });
       },
 
@@ -283,6 +349,7 @@
        * @param id 用来判断修改还是新增
        */
       refreshTable(id) {
+        this.userLoading = false;
         this.userFormVisible = false;
         this.$message({
           type: "success",
@@ -296,6 +363,7 @@
        * @param formName
        */
       submitUser(formName) {
+        this.userLoading = true;
         // 表单验证
         this.$refs[formName].validate(valid => {
           if (valid) {
@@ -327,6 +395,8 @@
                 .catch(() => {
                 });
             }
+          } else {
+            this.userLoading = false;
           }
         });
       },
@@ -426,7 +496,7 @@
       },
 
       /**
-       * 绑定角色
+       * 绑定角色界面
        * 单个用户时，先获取当前用户的角色信息
        * 批量绑定时，强制重置所有用户的角色信息
        */
@@ -437,14 +507,95 @@
             type: "warning",
             message: "请至少选择一条数据！"
           });
+          return;
         } else if (len === 1) {
-          console.log(this.multipleSelection[0]);
-          // getUserRoles(this.multipleSelection[0].id)
+          getUserRoles(this.multipleSelection[0])
+            .then(res => this.userRoles = res.data)
+            .catch(() => {
+            })
         } else {
-          console.log(this.multipleSelection);
+          this.userRoles = [];
+        }
+        this.userRoleForm.roleIds = [""];
+        this.roleFormVisible = true;
+      },
+
+      /**
+       * 删除已有角色
+       * @param index 索引
+       */
+      removeExistsRole(index) {
+        this.userRoles.splice(index, 1);
+      },
+
+      /**
+       * 删除新增的角色
+       * @param index 索引
+       */
+      removeSelectRole(index) {
+        this.userRoleForm.roleIds.splice(index, 1);
+      },
+
+      /**
+       * 下拉选中角色
+       * @param value 最新选中的值
+       * @param index 索引
+       */
+      chooseRole(value, index) {
+        // 校验原来的角色
+        for (let i = 0, len = this.userRoles.length; i < len; i++) {
+          if (this.userRoles[i].key === value) {
+            this.userRoleForm.roleIds[index] = "";
+            this.$message.error("不能重复选择！");
+            return;
+          }
+        }
+        // 校验新增的角色
+        for (let i = 0, len = this.userRoleForm.roleIds.length; i < len; i++) {
+          if (i === index) {
+            continue;
+          }
+          if (this.userRoleForm.roleIds[i] === value) {
+            this.userRoleForm.roleIds[index] = "";
+            this.$message.error("不能重复选择！");
+            return;
+          }
+        }
+        // 如果是最后一行，则新增一行
+        if (index === this.userRoleForm.roleIds.length - 1) {
+          this.userRoleForm.roleIds.push("");
         }
       },
 
+      /**
+       * 绑定角色
+       */
+      userBindRole() {
+        this.bindLoading = true;
+        // 合并角色列表（原来已有的+新增的）
+        let roleIds = [];
+        this.userRoles.forEach(item => roleIds.push(item.key));
+        this.userRoleForm.roleIds.forEach(roleId => {
+          if (roleId) {
+            roleIds.push(roleId);
+          }
+        });
+        const data = {
+          userIds: this.multipleSelection,
+          roles: roleIds
+        };
+        bindRole(data)
+          .then(() => {
+            this.$message({
+              type: "success",
+              message: "绑定成功!"
+            });
+            this.roleFormVisible = false;
+            this.bindLoading = false;
+          })
+          .catch(() => {
+          });
+      },
 
       /**
        * 上传前处理
@@ -549,4 +700,13 @@
   .form-item {
     width: 100%;
   }
+
+  .role-form-item {
+    width: 300px;
+  }
+
+  .role-form-remove {
+    margin-left: 25px;
+  }
+
 </style>

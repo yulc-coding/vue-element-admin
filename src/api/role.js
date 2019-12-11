@@ -46,6 +46,16 @@ export function list() {
 }
 
 /**
+ * 获取角色下拉
+ */
+export function roleSelect() {
+  return request({
+    url: "/sys/role/roleSelect",
+    method: "get"
+  });
+}
+
+/**
  * 获取角色的菜单列表
  * @param roleId
  */
