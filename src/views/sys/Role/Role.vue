@@ -39,7 +39,6 @@
           default-expand-all
           check-on-click-node
           :expand-on-click-node="false"
-          :default-checked-keys="defaultChecked"
           v-loading="treeLoading"
         />
       </el-col>
@@ -86,7 +85,6 @@
           children: "children",
           label: "name"
         },
-        defaultChecked: [],
         roleFormVisible: false,
         dialogTitle: "",
         rules: {
@@ -150,7 +148,7 @@
         this.treeLoading = true;
         roleMenus(roleId)
           .then(res => {
-            this.defaultChecked = res.data;
+            this.$refs.menu_tree.setCheckedKeys(res.data);
             this.treeLoading = false;
           })
           .catch(() => {
@@ -223,7 +221,7 @@
           });
           return;
         }
-        this.$confirm(`确定删除角色 ${this.role.name} 吗？`, "提示", {
+        this.$confirm(`确定删除角色【${this.role.name}】吗？`, "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
@@ -299,7 +297,6 @@
           .catch(() => {
           })
       },
-
 
       /**
        * 角色绑定菜单
