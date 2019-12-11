@@ -26,8 +26,8 @@
         <i class="el-icon-share" />
         <span slot="title">图表</span>
       </template>
-      <el-menu-item index="/c1">趋势图</el-menu-item>
-      <el-menu-item index="/c2">统计</el-menu-item>
+      <el-menu-item index="/charts/newHouse">楼盘价格趋势</el-menu-item>
+      <el-menu-item index="/charts/oldHouse">二手房价格趋势</el-menu-item>
     </el-submenu>
   </el-menu>
 </template>

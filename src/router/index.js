@@ -7,6 +7,8 @@ import User from "../views/sys/User/User";
 import Role from "../views/sys/Role/Role";
 import Menu from "../views/sys/Menu/Menu";
 import NotFound from "../views/NotFound";
+import NewHouse from "../views/charts/NewHouse/NewHouse";
+import OldHouse from "../views/charts/OldHouse/OldHouse";
 
 Vue.use(VueRouter);
 
@@ -34,6 +36,14 @@ const routes = [
       {
         path: "/sys/menu",
         component: Menu
+      },
+      {
+        path: "/charts/newHouse",
+        component: NewHouse
+      },
+      {
+        path: "/charts/oldHouse",
+        component: OldHouse
       },
       {
         path: "/404",

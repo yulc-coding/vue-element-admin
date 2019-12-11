@@ -358,8 +358,13 @@
   }
 
   .tree-option {
-    width: 100%;
     height: auto;
-    padding: 10px;
+    padding: 0;
+    font-weight: normal;
+  }
+
+  /* 节点的间距 */
+  ul li >>> .el-tree .el-tree-node__content {
+    height: auto;
   }
 </style>
