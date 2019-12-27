@@ -109,7 +109,7 @@
 
 <script>
 
-  import { add, del, update, tree } from "@/api/menu";
+  import { add, del, update, tree } from "@/api/sys/menu";
 
   export default {
     name: "Menu",

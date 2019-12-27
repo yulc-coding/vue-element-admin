@@ -7,8 +7,8 @@ import User from "../views/sys/User/User";
 import Role from "../views/sys/Role/Role";
 import Menu from "../views/sys/Menu/Menu";
 import NotFound from "../views/NotFound";
-import NewHouse from "../views/charts/NewHouse/NewHouse";
-import OldHouse from "../views/charts/OldHouse/OldHouse";
+import NewHouse from "../views/house/NewHouse/NewHouse";
+import SaleHouse from "../views/house/SaleHouse/SaleHouse";
 
 Vue.use(VueRouter);
 
@@ -38,12 +38,12 @@ const routes = [
         component: Menu
       },
       {
-        path: "/charts/newHouse",
+        path: "/house/newHouse",
         component: NewHouse
       },
       {
-        path: "/charts/oldHouse",
-        component: OldHouse
+        path: "/house/saleHouse",
+        component: SaleHouse
       },
       {
         path: "/404",

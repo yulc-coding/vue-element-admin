@@ -155,9 +155,9 @@
 </template>
 
 <script>
-  import { add, del, delMulti, update, getInfo, page, resetPwd, getUserRoles, bindRole } from "@/api/user";
-  import { tree } from "@/api/department";
-  import { roleSelect } from "@/api/role";
+  import { add, del, delMulti, update, getInfo, page, resetPwd, getUserRoles, bindRole } from "@/api/sys/user";
+  import { tree } from "@/api/sys/department";
+  import { roleSelect } from "@/api/sys/role";
 
   export default {
     data() {

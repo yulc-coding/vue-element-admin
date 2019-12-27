@@ -66,8 +66,8 @@
 </template>
 
 <script>
-  import { simpleTree } from "@/api/menu";
-  import { add, del, update, list, roleMenus, bindMenus } from "@/api/role";
+  import { simpleTree } from "@/api/sys/menu";
+  import { add, del, update, list, roleMenus, bindMenus } from "@/api/sys/role";
 
   export default {
     name: "Role",

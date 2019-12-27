@@ -51,7 +51,7 @@
 </template>
 
 <script>
-  import { add, del, update, tree } from "@/api/department";
+  import { add, del, update, tree } from "@/api/sys/department";
 
   export default {
     name: "Department",
