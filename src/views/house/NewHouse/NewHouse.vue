@@ -1,9 +1,9 @@
 <template>
   <div>
-    <div>
+    <div v-if="showPage">
       <el-form :inline="true" size="mini" :model="tableParams">
         <el-form-item label="日期">
-          <el-input v-model="tableParams.reportDate" />
+          <el-date-picker v-model="tableParams.reportDate" value-format="yyyyMMdd" type="date" />
         </el-form-item>
         <el-form-item label="地区">
           <el-input v-model="tableParams.city" />
@@ -22,7 +22,7 @@
         <el-table-column prop="houseType" label="户型" show-overflow-tooltip />
         <el-table-column label="详情" fixed="right" width="100">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" plain @click="houseTrend(scope.row.id)">趋势分析</el-button>
+            <el-button size="mini" type="primary" plain @click="houseTrend(scope.row.name)">趋势分析</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -38,23 +38,38 @@
       >
       </el-pagination>
     </div>
-    <div>
-      <el-page-header @back="goBack" content="房价趋势" />
-      <div>
-        时间选择
-      </div>
+    <div class="house-trend" v-else>
+      <el-page-header @back="goBack" content="房价趋势" v-loading="chartLoading" />
+      <el-form :inline="true" size="mini" :model="trend" class="trend-from">
+        <el-form-item label="日期">
+          <el-date-picker
+            v-model="trend.reportDate"
+            value-format="yyyyMMdd"
+            type="daterange"
+            align="right"
+            unlink-panels
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :picker-options="pickerOptions"
+            @change="dateChange"
+          >
+          </el-date-picker>
+        </el-form-item>
+      </el-form>
       <div id="myChart" :style="{width: '100%', height: '300px'}"></div>
     </div>
   </div>
 </template>
 
 <script>
-  import { page } from "@/api/house/newHouse";
+  import { page, trend } from "@/api/house/newHouse";
 
   export default {
     name: "NewHouse",
     data() {
       return {
+        showPage: true,
         tableParams: {
           reportDate: null,
           city: null,
@@ -65,13 +80,41 @@
         size: 10,
         total: 0,
         loading: false,
+        chartLoading: false,
         trend: {
           name: "",
           days: [],
-          prices: [],
-          beginDate: null,
-          endDate: null
-        }
+          price: [],
+          reportDate: []
+        },
+        pickerOptions: {
+          shortcuts: [{
+            text: "最近一周",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+              picker.$emit("pick", [start, end]);
+            }
+          }, {
+            text: "最近一个月",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+              picker.$emit("pick", [start, end]);
+            }
+          }, {
+            text: "最近三个月",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+              picker.$emit("pick", [start, end]);
+            }
+          }]
+        },
+        chartTitle: ""
       }
     },
     mounted() {
@@ -85,8 +128,10 @@
        */
       initDate() {
         this.tableParams.reportDate = this.formatDate(0);
-        this.trend.endDate = this.reportDate;
-        this.trend.beginDate = this.formatDate(30);
+        let trendDate = [];
+        trendDate.push(this.formatDate(30));
+        trendDate.push(this.tableParams.reportDate);
+        this.trend.reportDate = trendDate;
         this.housePage();
       },
 
@@ -137,34 +182,81 @@
         if (this.tableParams.name) {
           data.name = this.tableParams.name;
         }
-        page(data).then(res => {
-          const resData = res.data;
-          this.houses = resData.records;
-          this.page = resData.curPage;
-          this.total = resData.totalCount;
-          this.loading = false;
-        })
+        page(data)
+          .then(res => {
+            const resData = res.data;
+            this.houses = resData.records;
+            this.page = resData.curPage;
+            this.total = resData.totalCount;
+            this.loading = false;
+          })
           .catch(() => {
             this.loading = false;
           });
       },
 
+      dateChange(date) {
+        console.log(this.value2);
+        console.log(date);
+      },
+
       /**
        * 获取趋势信息
        */
-      houseTrend() {
+      houseTrend(name) {
+        this.chartLoading = true;
+        if (name) {
+          this.trend.name = name;
+        }
+        const data = {
+          name: name
+        };
+        console.log(this.trend.reportDate);
+        if (this.trend.reportDate.length === 2) {
+          data.beginDate = this.trend.reportDate[0];
+          data.endDate = this.trend.reportDate[1];
+        } else {
+          data.beginDate = this.trend.reportDate[0];
+        }
+        this.initCharTitle();
+        trend(data)
+          .then(res => {
+            const resData = res.data;
+            this.trend.days = resData.days;
+            this.trend.price = resData.price;
+            this.chartLoading = false;
+            this.initCharts();
+          })
+          .catch(() => {
+            this.chartLoading = false;
+          });
+        this.showPage = false;
+      },
 
+      /**
+       * 生成图表标题
+       */
+      initCharTitle() {
+        let chartTitle = this.trend.reportDate[0] + " ~ ";
+        if (this.trend.reportDate.length === 2) {
+          chartTitle = chartTitle + this.trend.reportDate[1];
+        } else {
+          chartTitle = chartTitle + "今日";
+        }
+        chartTitle = chartTitle + "【" + this.trend.name + "】房价趋势图";
+        this.chartTitle = chartTitle;
       },
 
       /**
        * 初始化图表
        */
       initCharts() {
+        console.log("init chart");
         let myChart = this.$echarts.init(document.getElementById('myChart'));
         myChart.setOption(
           {
             title: {
-              text: this.initCharTitle(),
+              text: this.chartTitle,
               textStyle: {
                 fontWeight: 'normal',
                 fontSize: 16
@@ -176,15 +268,13 @@
             },
             xAxis: {
               type: 'category',
-              //data: this.trend.days
-              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+              data: this.trend.days
             },
             yAxis: {
               type: 'value'
             },
             series: [{
-              //data: this.trend.prices,
-              data: [820, 932, 901, 934, 1290, 1330, 1320],
+              data: this.trend.price,
               type: 'line',
               smooth: true
             }]
@@ -193,23 +283,26 @@
       },
 
       /**
-       * 生成图表标题
+       * 返回表格模式
        */
-      initCharTitle() {
-        let chartTitle = this.trend.beginDate + " ~ ";
-        if (this.trend.endDate) {
-          chartTitle = chartTitle + this.trend.endDate;
-        } else {
-          chartTitle = chartTitle + "今日";
-        }
-        chartTitle = chartTitle + "【" + this.trend.name + "】房价趋势图";
-        return chartTitle;
-      },
-
       goBack() {
-
+        this.showPage = true;
       }
 
     }
   };
 </script>
+
+<style scoped>
+  .el-pagination {
+    margin-top: 20px;
+  }
+
+  .trend-from {
+    margin-top: 20px;
+  }
+
+  #myChart {
+    margin-top: 20px;
+  }
+</style>
