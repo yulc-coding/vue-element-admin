@@ -52,12 +52,13 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             :picker-options="pickerOptions"
+            :clearable="false"
             @change="dateChange"
           >
           </el-date-picker>
         </el-form-item>
       </el-form>
-      <div id="myChart" :style="{width: '100%', height: '300px'}"></div>
+      <div id="myChart" :style="{ width: '100%', height: '300px' }"></div>
     </div>
   </div>
 </template>
@@ -195,9 +196,8 @@
           });
       },
 
-      dateChange(date) {
-        console.log(this.value2);
-        console.log(date);
+      dateChange() {
+        this.houseTrend();
       },
 
       /**
@@ -209,9 +209,8 @@
           this.trend.name = name;
         }
         const data = {
-          name: name
+          name: this.trend.name
         };
-        console.log(this.trend.reportDate);
         if (this.trend.reportDate.length === 2) {
           data.beginDate = this.trend.reportDate[0];
           data.endDate = this.trend.reportDate[1];
@@ -251,7 +250,6 @@
        * 初始化图表
        */
       initCharts() {
-        console.log("init chart");
         let myChart = this.$echarts.init(document.getElementById('myChart'));
         myChart.setOption(
           {
