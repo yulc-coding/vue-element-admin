@@ -1,6 +1,12 @@
 <template>
   <div>
     <div v-if="showPage">
+      <el-alert
+        title="数据收集于安居客新房信息"
+        type="info"
+        show-icon
+        :closable="false">
+      </el-alert>
       <el-form :inline="true" size="mini" :model="tableParams">
         <el-form-item label="日期">
           <el-date-picker v-model="tableParams.reportDate" value-format="yyyyMMdd" type="date" />
@@ -15,6 +21,7 @@
           <el-button type="primary" @click="housePage">查询</el-button>
         </el-form-item>
       </el-form>
+
       <el-table :data="houses" style="width: 100%" v-loading="loading" stripe>
         <el-table-column prop="city" label="城市" width="150" />
         <el-table-column prop="name" label="名称" width="200" />
@@ -292,6 +299,10 @@
 </script>
 
 <style scoped>
+  .el-alert {
+    margin-bottom: 15px;
+  }
+
   .el-pagination {
     margin-top: 20px;
   }

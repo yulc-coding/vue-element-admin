@@ -24,10 +24,10 @@
     <el-submenu index="/charts">
       <template slot="title">
         <i class="el-icon-share" />
-        <span slot="title">房价</span>
+        <span slot="title">嘉兴房价</span>
       </template>
-      <el-menu-item index="/house/newHouse">楼盘价格趋势</el-menu-item>
-      <el-menu-item index="/house/saleHouse">二手房价格趋势</el-menu-item>
+      <el-menu-item index="/house/newHouse">楼盘信息</el-menu-item>
+      <el-menu-item index="/house/saleHouse">二手房信息</el-menu-item>
     </el-submenu>
   </el-menu>
 </template>
