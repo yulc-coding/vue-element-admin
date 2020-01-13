@@ -27,8 +27,9 @@
         <el-table-column prop="name" label="名称" width="200" />
         <el-table-column prop="price" label="价格" width="180" />
         <el-table-column prop="houseType" label="户型" show-overflow-tooltip />
-        <el-table-column label="详情" fixed="right" width="100">
+        <el-table-column label="详情" fixed="right" width="180">
           <template slot-scope="scope">
+            <el-button size="mini" type="primary" plain @click="houseInfo(scope.row.id)">详情</el-button>
             <el-button size="mini" type="primary" plain @click="houseTrend(scope.row.name)">趋势分析</el-button>
           </template>
         </el-table-column>
@@ -67,6 +68,16 @@
       </el-form>
       <div id="myChart" :style="{ width: '100%', height: '300px' }"></div>
     </div>
+    <div class="house-detail">
+      <el-drawer
+        title="详情"
+        :visible.sync="drawer"
+        :show-close="false"
+        size="35%"
+      >
+        <span>我来啦!</span>
+      </el-drawer>
+    </div>
   </div>
 </template>
 
@@ -89,6 +100,7 @@
         total: 0,
         loading: false,
         chartLoading: false,
+        drawer: false,
         trend: {
           name: "",
           days: [],
@@ -292,7 +304,17 @@
        */
       goBack() {
         this.showPage = true;
+      },
+
+      /**
+       * 显示明细
+       * @param id
+       */
+      houseInfo(id) {
+        console.log(id);
+        this.drawer = true;
       }
+
 
     }
   };
