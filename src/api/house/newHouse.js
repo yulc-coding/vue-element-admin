@@ -13,6 +13,17 @@ export function page(data) {
 }
 
 /**
+ * 根据ID获取详情
+ * @param id
+ */
+export function findById(id) {
+  return request({
+    url: "/crawler/new-house/findById/" + id,
+    method: "get"
+  });
+}
+
+/**
  * 趋势图
  * @param data
  */

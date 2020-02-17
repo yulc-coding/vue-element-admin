@@ -75,14 +75,38 @@
         :show-close="false"
         size="35%"
       >
-        <span>我来啦!</span>
+        <el-form :model="houseDetail" label-width="80px">
+          <el-form-item label="城市">
+            <span>{{ houseDetail.city }}</span>
+          </el-form-item>
+          <el-form-item label="名称">
+            <span>{{ houseDetail.name }}</span>
+          </el-form-item>
+          <el-form-item label="价格">
+            <span>{{ houseDetail.price }}</span>
+          </el-form-item>
+          <el-form-item label="户型">
+            <span>{{ houseDetail.houseType }}</span>
+          </el-form-item>
+          <el-form-item label="标签">
+            <span>{{ houseDetail.tags }}</span>
+          </el-form-item>
+          <el-form-item label="地址">
+            <span>{{ houseDetail.address }}</span>
+          </el-form-item>
+          <el-form-item label="图片">
+            <a :href="houseDetail.picLink" target="_blank">
+              <img :src="houseDetail.pic">
+            </a>
+          </el-form-item>
+        </el-form>
       </el-drawer>
     </div>
   </div>
 </template>
 
 <script>
-  import { page, trend } from "@/api/house/newHouse";
+  import { page, findById, trend } from "@/api/house/newHouse";
 
   export default {
     name: "NewHouse",
@@ -101,6 +125,16 @@
         loading: false,
         chartLoading: false,
         drawer: false,
+        houseDetail: {
+          city: "",
+          name: "",
+          price: "",
+          houseType: "",
+          tags: "",
+          address: "",
+          pic: "",
+          picLink: ""
+        },
         trend: {
           name: "",
           days: [],
@@ -312,6 +346,12 @@
        */
       houseInfo(id) {
         console.log(id);
+        findById(id)
+          .then(res => {
+            this.houseDetail = res.data;
+          })
+          .catch(() => {
+          });
         this.drawer = true;
       }
 
