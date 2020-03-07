@@ -49,6 +49,40 @@
     <div class="house-trend" v-else>
       <el-page-header @back="goBack" content="详情" />
     </div>
+    <div class="house-detail">
+      <el-drawer
+        title="详情"
+        :visible.sync="drawer"
+        :show-close="false"
+        size="35%"
+      >
+        <el-form :model="houseDetail" label-width="80px">
+          <el-form-item label="城市">
+            <span>{{ houseDetail.city }}</span>
+          </el-form-item>
+          <el-form-item label="名称">
+            <span>{{ houseDetail.name }}</span>
+          </el-form-item>
+          <el-form-item label="价格">
+            <span>总价：{{ houseDetail.allPrice }}，单价：{{ houseDetail.unitPrice }}</span>
+          </el-form-item>
+          <el-form-item label="户型">
+            <span>{{ houseDetail.houseType }}</span>
+          </el-form-item>
+          <el-form-item label="标签">
+            <span>{{ houseDetail.tags }}</span>
+          </el-form-item>
+          <el-form-item label="地址">
+            <span>{{ houseDetail.address }}</span>
+          </el-form-item>
+          <el-form-item label="图片">
+            <a :href="houseDetail.picLink" target="_blank">
+              <img :src="houseDetail.pic">
+            </a>
+          </el-form-item>
+        </el-form>
+      </el-drawer>
+    </div>
   </div>
 </template>
 
@@ -70,7 +104,8 @@
         size: 10,
         total: 0,
         loading: false,
-        houseDetail: {}
+        houseDetail: {},
+        drawer: false
       }
     },
     mounted() {
