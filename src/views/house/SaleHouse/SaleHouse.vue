@@ -76,9 +76,7 @@
             <span>{{ houseDetail.address }}</span>
           </el-form-item>
           <el-form-item label="图片">
-            <a :href="houseDetail.picLink" target="_blank">
-              <img :src="houseDetail.pic">
-            </a>
+            <img :src="houseDetail.pic">
           </el-form-item>
         </el-form>
       </el-drawer>
@@ -104,7 +102,16 @@
         size: 10,
         total: 0,
         loading: false,
-        houseDetail: {},
+        houseDetail: {
+          city: "",
+          name: "",
+          allPrice: "",
+          unitPrice: "",
+          houseType: "",
+          tags: "",
+          address: "",
+          pic: ""
+        },
         drawer: false
       }
     },
@@ -187,11 +194,13 @@
        * @param id
        */
       houseInfo(id) {
-        console.log(id);
         findById(id)
           .then(res => {
-
+            this.houseDetail = res.data;
           })
+          .catch(() => {
+          });
+        this.drawer = true;
       },
 
       /**

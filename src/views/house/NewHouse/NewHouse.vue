@@ -345,7 +345,6 @@
        * @param id
        */
       houseInfo(id) {
-        console.log(id);
         findById(id)
           .then(res => {
             this.houseDetail = res.data;
